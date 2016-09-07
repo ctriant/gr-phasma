@@ -23,6 +23,7 @@
 #define INCLUDED_PHASMA_API_H
 
 #include <gnuradio/attributes.h>
+#include <phasma/log.h>
 
 #ifdef gnuradio_phasma_EXPORTS
 #  define PHASMA_API __GR_ATTR_EXPORT

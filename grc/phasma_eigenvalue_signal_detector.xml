@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<block>
+  <name>Eigenvalue Signal Detector</name>
+  <key>phasma_eigenvalue_signal_detector</key>
+  <category>[phasma]</category>
+  <import>import phasma</import>
+  <make>phasma.eigenvalue_signal_detector($samples_num, 
+  										  $oversampling_factor,
+  										  $smoothing_factor,
+										  $pfa, 
+										  $algo)
+  </make>
+  
+  <param>
+    <name>Number of samples</name>
+    <key>samples_num</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Oversampling factor</name>
+    <key>oversampling_factor</key>
+    <type>int</type>
+  </param>
+  
+  
+  <param>
+    <name>Smoothing factor</name>
+    <key>smoothing_factor</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>False-Alarm probability</name>
+    <key>pfa</key>
+    <type>float</type>
+  </param>
+  
+  <param>
+    <name>Algorithm</name>
+    <key>algo</key>
+    <value>1</value>
+    <type>int</type>
+    <option>
+      <name>MME</name>
+      <key>1</key>
+    </option>
+    <option>
+      <name>EME</name>
+      <key>0</key>
+	</option>
+  </param>
+
+  <sink>
+	<name>in</name>
+	<type>complex</type>
+  </sink>
+
+  <source>
+	<name>out</name>
+	<type>int</type>
+  </source>
+  
+</block>

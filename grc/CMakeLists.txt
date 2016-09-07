@@ -18,5 +18,6 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    phasma_rforest_model.xml DESTINATION share/gnuradio/grc/blocks
+    phasma_rforest_model.xml
+    phasma_eigenvalue_signal_detector.xml DESTINATION share/gnuradio/grc/blocks
 )
