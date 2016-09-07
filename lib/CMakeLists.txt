@@ -27,6 +27,8 @@ include_directories(${Boost_INCLUDE_DIR}
                     
 link_directories(${Boost_LIBRARY_DIRS})
 
+include_directories(${ARMADILLO_INCLUDE_DIRS})
+
 list(APPEND phasma_sources
     rforest_model_impl.cc
     eigenvalue_signal_detector_impl.cc
