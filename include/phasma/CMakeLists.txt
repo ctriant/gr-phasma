@@ -23,5 +23,6 @@
 install(FILES
     api.h
     log.h
-    rforest_model.h DESTINATION include/phasma
+    rforest_model.h
+    eigenvalue_signal_detector.h DESTINATION include/phasma
 )

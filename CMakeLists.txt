@@ -74,6 +74,23 @@ if (NOT OpenCV_FOUND)
 endif()
 
 ########################################################################
+# Find OpenBlas
+########################################################################
+find_package(BLAS REQUIRED)
+
+if (NOT BLAS_FOUND)
+    message(FATAL_ERROR "Blas required to compile phasma")
+endif()
+
+########################################################################
+# Find Armadillo
+########################################################################
+find_package(Armadillo REQUIRED)
+
+if (NOT ARMADILLO_FOUND)
+    message(FATAL_ERROR "Armadillo required to compile phasma")
+endif()
+########################################################################
 # Install directories
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
