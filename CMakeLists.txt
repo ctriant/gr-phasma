@@ -64,6 +64,15 @@ if(NOT Boost_FOUND)
 endif()
 
 ########################################################################
+# Find OpenCV
+########################################################################
+find_package(OpenCV REQUIRED )
+
+if (NOT OpenCV_FOUND)
+    message(FATAL_ERROR "OpenCV required to compile phasma")
+endif()
+
+########################################################################
 # Install directories
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
@@ -172,6 +181,7 @@ add_subdirectory(python)
 add_subdirectory(grc)
 add_subdirectory(apps)
 add_subdirectory(docs)
+
 
 ########################################################################
 # Install cmake search helper for this library
