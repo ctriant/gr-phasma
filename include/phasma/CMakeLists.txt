@@ -22,5 +22,6 @@
 ########################################################################
 install(FILES
     api.h
-    DESTINATION include/phasma
+    log.h
+    rforest_model.h DESTINATION include/phasma
 )
