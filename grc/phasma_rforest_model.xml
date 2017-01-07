@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<block>
+	<name>rforest_model</name>
+	<key>phasma_rforest_model</key>
+	<category>[phasma]</category>
+	<import>import phasma</import>
+	<make>phasma.rforest_model($npredictors,
+		$nobservations,
+		$ninport,
+		$max_depth,
+		$min_sample_count,
+		$regression_accu,
+		$use_surrogates,
+		$max_categories,
+		$calc_var_importance,
+		$active_var_count,
+		$max_iter,
+		$filename)
+	</make>
+
+
+	<param>
+		<name>Predictors number</name>
+		<key>npredictors</key>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Dataset observations</name>
+		<key>nobservations</key>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Input ports number</name>
+		<key>ninport</key>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Max depth</name>
+		<key>max_depth</key>
+		<value>10</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Min sample count</name>
+		<key>min_sample_count</key>
+		<value>2</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Regression accuracy</name>
+		<key>regression_accu</key>
+		<value>0</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Use surrogates</name>
+		<key>use_surrogates</key>
+		<value>False</value>
+		<type>bool</type>
+		<option>
+			<name>Off</name>
+			<key>False</key>
+		</option>
+		<option>
+			<name>On</name>
+			<key>True</key>
+		</option>
+	</param>
+
+	<param>
+		<name>Max categories</name>
+		<key>max_categories</key>
+		<value>16</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Calculate variable importance</name>
+		<key>calc_var_importance</key>
+		<value>True</value>
+		<type>bool</type>
+		<option>
+			<name>Off</name>
+			<key>False</key>
+		</option>
+		<option>
+			<name>On</name>
+			<key>True</key>
+		</option>
+	</param>
+
+	<param>
+		<name>Active variable count</name>
+		<key>active_var_count</key>
+		<value>0</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Max iterations</name>
+		<key>max_iter</key>
+		<value>100</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>File destination</name>
+		<key>filename</key>
+		<type>file_save</type>
+	</param>
+
+	<sink>
+		<name>in</name>
+		<type>complex</type>
+		<nports>$ninport</nports>
+	</sink>
+
+</block>

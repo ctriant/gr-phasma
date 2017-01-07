@@ -22,25 +22,31 @@
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
 
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIR}
+                    ${ARMADILLO_INCLUDE_DIRS})
+                    
 link_directories(${Boost_LIBRARY_DIRS})
 
-include_directories(${ARMADILLO_INCLUDE_DIRS})
-
 list(APPEND phasma_sources
+    rforest_model_impl.cc
 )
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
 if(NOT phasma_sources)
 	MESSAGE(STATUS "No C++ sources... skipping lib/")
 	return()
-endif(NOT phasma_sources)
+endif(NOT phasma_sources)                                         
+
+list(APPEND phasma_libs ${Boost_LIBRARIES} 
+                            ${OpenCV_LIBS}
+                            ${ARMADILLO_LIBRARIES}
+                            ${GNURADIO_ALL_LIBRARIES}
+)
 
 add_library(gnuradio-phasma SHARED ${phasma_sources})
-target_link_libraries(gnuradio-phasma ${Boost_LIBRARIES} 
-                                      ${OpenCV_LIBS}
-                                      ${ARMADILLO_LIBRARIES}
-                                      ${GNURADIO_ALL_LIBRARIES})
+
+target_link_libraries(gnuradio-phasma ${phasma_libs})
+                       
 set_target_properties(gnuradio-phasma PROPERTIES DEFINE_SYMBOL "gnuradio_phasma_EXPORTS")
 
 if(APPLE)
@@ -76,6 +82,7 @@ target_link_libraries(
   ${Boost_LIBRARIES}
   ${ARMADILLO_LIBRARIES}
   ${CPPUNIT_LIBRARIES}
+  ${GNURADIO_FFT_LIBRARIES}
   gnuradio-phasma
 )
 
