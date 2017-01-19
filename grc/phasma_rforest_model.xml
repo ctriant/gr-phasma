@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <block>
-	<name>rforest_model</name>
+	<name>OpenCV RandomForest Trainer</name>
 	<key>phasma_rforest_model</key>
 	<category>[phasma]</category>
 	<import>import phasma</import>

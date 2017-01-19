@@ -31,4 +31,9 @@
 #  define PHASMA_API __GR_ATTR_IMPORT
 #endif
 
+typedef enum
+{
+  RANDOM_FOREST,
+} opencv_ml_classifier_type_t;
+
 #endif /* INCLUDED_PHASMA_API_H */
