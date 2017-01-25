@@ -32,6 +32,7 @@ include_directories(${ARMADILLO_INCLUDE_DIRS})
 list(APPEND phasma_sources
     rforest_model_impl.cc
     eigenvalue_signal_detector_impl.cc
+    opencv_predict_impl.cc
 )
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
@@ -66,32 +67,3 @@ install(TARGETS gnuradio-phasma
     ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
     RUNTIME DESTINATION bin              # .dll file
 )
-
-########################################################################
-# Build and register unit test
-########################################################################
-include(GrTest)
-
-include_directories(${CPPUNIT_INCLUDE_DIRS})
-
-list(APPEND test_phasma_sources
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_phasma.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_phasma.cc
-)
-add_executable(test-phasma ${test_phasma_sources})
-target_link_libraries(
-  test-phasma
-  ${GNURADIO_RUNTIME_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
-  ${CPPUNIT_LIBRARIES}
-  ${GNURADIO_FFT_LIBRARIES}
-  gnuradio-phasma
-)
-
-########################################################################
-# Set executable store directory
-########################################################################
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/apps)
-
-GR_ADD_TEST(test_phasma test-phasma)

@@ -26,7 +26,6 @@
 #include <gnuradio/fft/window.h>
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
-#include <opencv2/core/utility.hpp>
 
 namespace gr
 {

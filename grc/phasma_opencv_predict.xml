@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<block>
+  <name>OpenCV Classifier</name>
+  <key>phasma_opencv_predict</key>
+  <category>[phasma]</category>
+  <import>import phasma</import>
+  <make>phasma.opencv_predict($input_multiplier,
+			  				  $classifier_type,
+			   				  $npredictors,
+			   				  $ninport,
+			   				  $filename)</make>
+			   				  
+	<param>
+		<name>Input multiplier</name>
+		<key>input_multiplier</key>
+		<value>100</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Classification Method</name>
+		<key>classifier_type</key>
+		<type>enum</type>
+		<option>
+			<name>Random Forest</name>
+			<key>0</key>
+		</option>
+	</param>
+	
+	<param>
+		<name>Predictors number</name>
+		<key>npredictors</key>
+		<type>int</type>
+	</param>
+	
+	<param>
+		<name>Input ports number</name>
+		<key>ninport</key>
+		<type>int</type>
+	</param>
+	
+	<param>
+		<name>Trained Model</name>
+		<key>filename</key>
+		<type>file_save</type>
+	</param>
+	
+	<sink>
+		<name>in</name>
+		<type>complex</type>
+		<nports>$ninport</nports>
+	</sink>
+	
+	<source>
+    	<name>classification</name>
+ 	<type>message</type>
+</source>
+  
+</block>

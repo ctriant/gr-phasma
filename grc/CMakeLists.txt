@@ -19,5 +19,6 @@
 
 install(FILES
     phasma_rforest_model.xml
-    phasma_eigenvalue_signal_detector.xml DESTINATION share/gnuradio/grc/blocks
+    phasma_eigenvalue_signal_detector.xml 
+    phasma_opencv_predict.xml DESTINATION share/gnuradio/grc/blocks
 )

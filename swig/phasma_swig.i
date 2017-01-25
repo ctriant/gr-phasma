@@ -10,6 +10,7 @@
 %{
 #include "phasma/rforest_model.h"
 #include "phasma/eigenvalue_signal_detector.h"
+#include "phasma/opencv_predict.h"
 %}
 
 
@@ -17,3 +18,5 @@
 GR_SWIG_BLOCK_MAGIC2(phasma, rforest_model);
 %include "phasma/eigenvalue_signal_detector.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, eigenvalue_signal_detector);
+%include "phasma/opencv_predict.h"
+GR_SWIG_BLOCK_MAGIC2(phasma, opencv_predict);
