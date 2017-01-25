@@ -24,5 +24,6 @@ install(FILES
     api.h
     log.h
     rforest_model.h
-    eigenvalue_signal_detector.h DESTINATION include/phasma
+    eigenvalue_signal_detector.h 
+    opencv_predict.h DESTINATION include/phasma
 )
