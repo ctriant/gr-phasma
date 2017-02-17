@@ -22,51 +22,89 @@
 #define INCLUDED_PHASMA_EIGENVALUE_SIGNAL_DETECTOR_IMPL_H
 
 #include <phasma/eigenvalue_signal_detector.h>
-#define ARMA_DONT_USE_WRAPPER
-#include <armadillo>
-#include <numeric>
+#include <gnuradio/fft/fft.h>
 
-namespace gr
-{
-  namespace phasma
-  {
+namespace gr {
+namespace phasma {
 
-    class eigenvalue_signal_detector_impl : public eigenvalue_signal_detector
-    {
-    private:
-      size_t d_samples_num;
-      size_t d_duration;
-      size_t d_smoothing_factor;
-      size_t d_oversampling_factor;
+class eigenvalue_signal_detector_impl: public eigenvalue_signal_detector {
+private:
+	size_t d_eigen_samples;
+	size_t d_smoothing_factor;
+	
+	/* The FFT size */       
+	const size_t d_fft_size;
 
-      double d_pfa;
-      float d_threshold;
+	double d_pfa;
+	
+	/* Decision threshold of eigenvalue-based method */       
+	float d_eigen_threshold;
+	
+	/* Operational sampling rate */
+	const double d_sampling_rate;
+	
+    /* The available bandwidth in MHz */
+	float d_bw;
+	
+    /* Number of samples to discard per side in the observed spectrum band*/
+	size_t d_num_samps_to_discard; 
+	
+	/* Number of samples per side in the observed spectrum band */
+	size_t d_num_samps_per_side;
+	
+    /* Number of sub-carriers */
+	size_t d_subcarriers_num;
+	
+    /* Blackmann-Harris window */
+	float* d_blackmann_harris_win; 
+	
+	/* Vector to store the estimated PSD */
+	float* d_psd; 
+	
+	/* Auxiliary FFT vector */
+	fft::fft_complex* d_fft; 
+	
+	 /* Auxiliary vector to store FFT shift */
+	float* d_shift;
+	
+    /* Vector that holds the noise-floor estimation */
+	float* d_noise_floor;
+	
+	/* Normalization factor used in the calculation of the PSD */
+	gr_complex d_norm_factor;
+	
+	/* The number of requested noise-floor estimations */
+	size_t d_noise_floor_est_cnt;
+	
+	bool d_noise_floor_est;
+	
+	static bool sort_using_greater_than(float u, float v) {
+		return u > v;
+	}
 
-      uint8_t d_algo;
+	float
+	eigen_threshold_estimation();
+	
+	void 
+	noise_floor_estimation(const gr_complex* in, int available_items);
 
-      arma::cx_frowvec d_sample_vec;
+public:
+	eigenvalue_signal_detector_impl(size_t eigen_samples,
+									size_t smoothing_factor, 
+									double pfa,
+									size_t fft_size,
+									float sampling_rate,
+									float actual_bw,
+									size_t noise_floor_est_cnt);
+	
+	~eigenvalue_signal_detector_impl();
 
-      static bool sort_using_greater_than(float u, float v)
-      {
-         return u > v;
-      }
+	int
+	work(int noutput_items, gr_vector_const_void_star &input_items,
+			gr_vector_void_star &output_items);
+};
 
-      float
-      threshold_estimation (uint8_t algo);
-
-    public:
-      eigenvalue_signal_detector_impl (size_t samples_num,
-				       size_t oversampling_factor,
-				       size_t smoothing_factor, double pfa,
-				       uint8_t algo);
-      ~eigenvalue_signal_detector_impl ();
-
-      int
-      work (int noutput_items, gr_vector_const_void_star &input_items,
-	    gr_vector_void_star &output_items);
-    };
-
-  } // namespace phasma
+} // namespace phasma
 } // namespace gr
 
 #endif /* INCLUDED_PHASMA_EIGENVALUE_SIGNAL_DETECTOR_IMPL_H */
