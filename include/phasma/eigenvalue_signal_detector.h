@@ -24,35 +24,33 @@
 #include <phasma/api.h>
 #include <gnuradio/sync_decimator.h>
 
-namespace gr
-{
-  namespace phasma
-  {
+namespace gr {
+namespace phasma {
 
-    /*!
-     * \brief <+description of block+>
-     * \ingroup phasma
-     *
-     */
-    class PHASMA_API eigenvalue_signal_detector : virtual public gr::sync_decimator
-    {
-    public:
-      typedef boost::shared_ptr<eigenvalue_signal_detector> sptr;
+/*!
+ * \brief <+description of block+>
+ * \ingroup phasma
+ *
+ */
+class PHASMA_API eigenvalue_signal_detector: virtual public gr::sync_block {
+public:
+	typedef boost::shared_ptr<eigenvalue_signal_detector> sptr;
 
-      /*!
-       * \brief Return a shared_ptr to a new instance of phasma::eigenvalue_signal_detector.
-       *
-       * To avoid accidental use of raw pointers, phasma::eigenvalue_signal_detector's
-       * constructor is in a private implementation
-       * class. phasma::eigenvalue_signal_detector::make is the public interface for
-       * creating new instances.
-       */
-      static sptr
-      make (size_t samples_num, size_t oversampling_factor,
-	    size_t smoothing_factor, double pfa, uint8_t algo);
-    };
+	/*!
+	 * \brief Return a shared_ptr to a new instance of phasma::eigenvalue_signal_detector.
+	 *
+	 * To avoid accidental use of raw pointers, phasma::eigenvalue_signal_detector's
+	 * constructor is in a private implementation
+	 * class. phasma::eigenvalue_signal_detector::make is the public interface for
+	 * creating new instances.
+	 */
+	static sptr
+	make(size_t eigen_samples, size_t smoothing_factor, double pfa,
+			size_t fft_size, float sampling_rate, float actual_bw,
+			size_t noise_floor_est_cnt);
+};
 
-  } // namespace phasma
+} // namespace phasma
 } // namespace gr
 
 #endif /* INCLUDED_PHASMA_EIGENVALUE_SIGNAL_DETECTOR_H */

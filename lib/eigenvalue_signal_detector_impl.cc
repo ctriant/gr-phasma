@@ -22,161 +22,206 @@
 #include "config.h"
 #endif
 
+#define ARMA_DONT_USE_WRAPPER
+#include <armadillo>
+#include <volk/volk.h> 
+#include <boost/algorithm/minmax.hpp>
+#include <math.h>
+#include <phasma/api.h> 
+#include <phasma/log.h>
 #include <gnuradio/io_signature.h>
+
 #include "eigenvalue_signal_detector_impl.h"
 
-namespace gr
+namespace gr {
+namespace phasma {
+
+eigenvalue_signal_detector::sptr eigenvalue_signal_detector::make(
+		size_t eigen_samples, size_t smoothing_factor, double pfa,
+		size_t fft_size, float sampling_rate, float actual_bw, size_t noise_floor_est_cnt) {
+	return gnuradio::get_initial_sptr(
+			new eigenvalue_signal_detector_impl(eigen_samples, smoothing_factor,
+					pfa, fft_size, sampling_rate, actual_bw, noise_floor_est_cnt));
+}
+
+/*
+ * The private constructor
+ */
+eigenvalue_signal_detector_impl::eigenvalue_signal_detector_impl(
+		size_t eigen_samples, size_t smoothing_factor,
+		double pfa, size_t fft_size, float sampling_rate, float actual_bw,
+		size_t noise_floor_est_cnt) :
+		gr::sync_block("eigenvalue_signal_detector",
+				gr::io_signature::make(1, 1, sizeof(gr_complex)),
+				gr::io_signature::make(0, 0, 0)),
+				d_eigen_samples(eigen_samples),
+				d_smoothing_factor(smoothing_factor), 
+				d_pfa(pfa),
+			    d_fft_size(fft_size), 
+				d_sampling_rate(sampling_rate),
+				d_bw(actual_bw * pow(actual_bw, 6)), 
+				d_num_samps_to_discard(
+				ceil(
+						(d_fft_size
+								- (d_bw * (float) d_fft_size / d_sampling_rate))
+								/ 2)), d_num_samps_per_side(
+				(d_fft_size / 2) - d_num_samps_to_discard),
+				d_subcarriers_num(2 * d_num_samps_per_side), 
+				d_norm_factor(1 / (float) d_fft_size, 0), 
+				d_noise_floor_est_cnt(noise_floor_est_cnt),
+				d_noise_floor_est(true)
+
 {
-  namespace phasma
-  {
+	/* Process in a per-FFT basis */
+	set_output_multiple (d_fft_size);
+	
+    /* Compute the decision threshold for the eigenvalue detector */       
+	d_eigen_threshold = eigen_threshold_estimation();
+	PHASMA_DEBUG("Eigenvalue threshold %f \n", d_eigen_threshold);
+	
+	d_fft = new fft::fft_complex(d_fft_size, true, 1);
+	d_shift = (float*) volk_malloc((d_subcarriers_num) * sizeof(float), 32);
+	
+	d_blackmann_harris_win = (float*) volk_malloc(d_fft_size * sizeof(float),
+			32); 
+	
+	/* Calculation of Blackmann-Harris window */
+	for (size_t i = 0; i < d_fft_size; i++) {
+		d_blackmann_harris_win[i] = 0.35875
+				- 0.48829 * cos((2 * M_PI * i) / (d_fft_size - 1))
+				+ 0.14128 * cos((4 * M_PI * i) / (d_fft_size - 1))
+				- 0.01168 * cos((6 * M_PI * i) / (d_fft_size - 1));
+	}
+	d_psd = (float*) volk_malloc(d_fft_size * sizeof(float), 32);
+	d_noise_floor = (float*) volk_malloc(d_fft_size * sizeof(float), 32);
+	memset(d_noise_floor, 0, d_fft_size);
+	
+}
 
-    eigenvalue_signal_detector::sptr
-    eigenvalue_signal_detector::make (size_t samples_num,
-				      size_t oversampling_factor,
-				      size_t smoothing_factor, double pfa,
-				      uint8_t algo)
-    {
-      return gnuradio::get_initial_sptr(
-	  new eigenvalue_signal_detector_impl(samples_num, oversampling_factor,
-					      smoothing_factor, pfa, algo));
-    }
+eigenvalue_signal_detector_impl::~eigenvalue_signal_detector_impl() {
+	delete d_fft;
+	volk_free(d_blackmann_harris_win);
+	volk_free(d_psd);
+	volk_free(d_noise_floor);
+	volk_free (d_shift);
+}
 
-    /*
-     * The private constructor
-     */
-    eigenvalue_signal_detector_impl::eigenvalue_signal_detector_impl (
-	size_t samples_num, size_t oversampling_factor, size_t smoothing_factor,
-	double pfa, uint8_t algo) :
-	    gr::sync_decimator(
-		"eigenvalue_signal_detector",
-		gr::io_signature::make(1, 1, sizeof(gr_complex)),
-		gr::io_signature::make(1, 1, sizeof(int)),
-		(samples_num * oversampling_factor) + smoothing_factor),
-	    d_samples_num(samples_num),
-	    d_oversampling_factor(oversampling_factor),
-	    d_duration(samples_num * oversampling_factor),
-	    d_smoothing_factor(smoothing_factor),
-	    d_pfa(pfa),
-	    d_algo(algo),
-	    d_sample_vec(d_duration + d_smoothing_factor)
-    {
-      d_threshold = threshold_estimation(algo);
-    }
+float 
+eigenvalue_signal_detector_impl::eigen_threshold_estimation() {
+	float threshold;
+	float p_1;
+	float p_2;
 
-    eigenvalue_signal_detector_impl::~eigenvalue_signal_detector_impl ()
-    {
-    }
-
-    float
-    eigenvalue_signal_detector_impl::threshold_estimation (uint8_t algo)
-    {
-      float threshold;
-      float p_1;
-      float p_2;
-
-      /**
-       * TODO: Replace constant multiplier with an argument for the inverse
-       * second-order Tracy-Widom function
-       */
-      if (d_algo == 1) {
 	/* Maximum-minimum eigenvalue (MME) algorithm threshold */
-	p_1 = pow(
-	    sqrt(d_duration) + sqrt(d_oversampling_factor * d_smoothing_factor),
-	    2)
-	    / pow(
-		sqrt(d_duration)
-		    - sqrt(d_oversampling_factor * d_smoothing_factor),
-		2);
+	p_1 = pow(sqrt(d_eigen_samples) + sqrt(d_smoothing_factor), 2)
+			/ pow(sqrt(d_eigen_samples) - sqrt(d_smoothing_factor), 2);
 
 	p_2 = 1
-	    + (pow(
-		sqrt(d_duration)
-		    + sqrt(d_oversampling_factor * d_smoothing_factor),
-		(-1) * 2 / 3.0)
-		/ pow(d_duration * d_oversampling_factor * d_smoothing_factor,
-		      1 / 6.0)) * 0.59;
+			+ (pow(sqrt(d_eigen_samples) + sqrt(d_smoothing_factor),
+					(-1) * 2 / 3.0)
+					/ pow(d_eigen_samples * d_smoothing_factor, 1 / 6.0))
+					* 0.59;
 
 	threshold = p_1 / p_2;
-      }
-      else if (d_algo == 0) {
-	/* Energy with minimum eigenvalue (EME) algorithm threshold */
-	p_1 = 0.59 * sqrt(2 * d_duration)
-	    + (d_duration * sqrt(d_oversampling_factor));
 
-	p_2 = sqrt(d_oversampling_factor)
-	    * pow(
-		sqrt(d_duration)
-		    - sqrt(d_oversampling_factor * d_smoothing_factor),
-		2);
+	return threshold;
+}
 
-	threshold = p_1 / p_2;
-      }
-      return threshold;
-    }
+int 
+eigenvalue_signal_detector_impl::work(int noutput_items,
+		gr_vector_const_void_star &input_items,
+		gr_vector_void_star &output_items) {
+	
+	const gr_complex *in = (const gr_complex*) input_items[0];
+	
+	float ratio;
+	size_t noise_free = 0;
+	
+	/* 
+	 * TODO: Actually the number of possible iterations is larger.
+	 * Number of input samples is a multiple of fft_size.
+	 * For now a kind of decimation is performed and only the first chunk of
+	 * fft_size samples is handled.
+	 */
+	
+	size_t iter_num = d_fft_size/d_eigen_samples;
+	const gr_complex *win_ptr;
+	arma::cx_fmat X = arma::cx_fmat(d_eigen_samples, d_smoothing_factor);
+	arma::cx_fmat R;
+	arma::cx_fcolvec eigval;
+	std::vector<float> feigval(d_smoothing_factor);
+	// Handle all possible chunks of eigen_samples
+	for (size_t it=0; it < iter_num; it++) {
+		// Last iteration should use previous samples
+		if (it == iter_num - 1) {
+			win_ptr = &in[(it - 1) + d_eigen_samples - d_smoothing_factor -1];
+		} else {
+			win_ptr = &in[it];
+		}
+		memcpy (&X[0], win_ptr, d_eigen_samples*sizeof(gr_complex));       
+		for (size_t i = 1; i < d_smoothing_factor; i++) {
+			memcpy(&X[(d_eigen_samples * i)], &win_ptr[i],
+					d_eigen_samples  * sizeof(gr_complex));
+		}
+		
+		R = arma::cov(X);
+		arma::eig_gen(eigval, R);
+		for (size_t t = 0; t < eigval.n_elem; t++) {
+			feigval[t] = std::abs(eigval(t));
+		}
+		std::sort(feigval.begin(), feigval.end(), std::greater<float>()); 
+		/* Maximum-minimum eigenvalue detection algorithm */
+		ratio = feigval[0] / feigval[feigval.size() - 1];
+		
+		if (ratio <= d_eigen_threshold) {
+			noise_free++;
+			PHASMA_DEBUG("***** Signal Absent *****");
+			PHASMA_DEBUG("Eigenvalues num: %d", eigval.n_elem);
+			PHASMA_DEBUG("Min Eigenvalue: %f", feigval[feigval.size() - 1]);
+			PHASMA_DEBUG("Max Eigenvalue: %f", feigval[0]);
+			PHASMA_DEBUG("Ratio: %f", ratio);
+			PHASMA_DEBUG("Threshold: %f \n", d_eigen_threshold);
+		}
+		else {
+//			PHASMA_DEBUG("I see land!");
+		}
+	}
+	
+	if (d_noise_floor_est && noise_free == iter_num
+			&& d_noise_floor_est_cnt > 0) {
+		PHASMA_DEBUG("Ok sailor! Bring me a good bottle of noise-floor rum.");
+		noise_floor_estimation(in, noutput_items);
+		/* Perform shifting and cropping on squared magnitude max noise-floor*/
+		memcpy(&d_shift[0],
+				&d_noise_floor[(d_fft_size / 2) + d_num_samps_to_discard],
+				sizeof(float) * (d_num_samps_per_side));
+		memcpy(&d_shift[d_num_samps_per_side], &d_noise_floor[0],
+				sizeof(float) * (d_num_samps_per_side));
+		for (size_t t=0; t<d_subcarriers_num; t++){
+			std::cout << 10*log10(d_shift[t]) << std::endl;
+		}
+	}
+	
+	return noutput_items;
+	
+}
 
-    int
-    eigenvalue_signal_detector_impl::work (
-	int noutput_items, gr_vector_const_void_star &input_items,
-	gr_vector_void_star &output_items)
-    {
-      const gr_complex *in = (const gr_complex*) input_items[0];
-      size_t *out = (size_t*) output_items[0];
+void eigenvalue_signal_detector_impl::noise_floor_estimation(
+		const gr_complex* in, int available_items) {
 
-      float ratio;
-
-      memcpy(
-	  &d_sample_vec[0],
-	  &in[0],
-	  (d_duration * d_oversampling_factor + d_smoothing_factor)
-	      * sizeof(gr_complex));
-
-      arma::cx_fmat X = arma::cx_fmat(d_duration * d_oversampling_factor,
-				      d_smoothing_factor);
-      for (int i = 0; i < d_smoothing_factor; i++) {
-	memcpy(&X[d_duration * d_oversampling_factor * i], &in[i],
-	       d_duration * d_oversampling_factor * sizeof(gr_complex));
-      }
-
-      arma::cx_fmat R = arma::cov(X);
-      arma::cx_fcolvec eigval;
-      arma::eig_gen(eigval, R);
-      std::vector<float> feigval(eigval.n_elem);
-      for (size_t t = 0; t < eigval.n_elem; t++) {
-	feigval[t] = std::abs(eigval(t));
-      }
-      std::sort(feigval.begin(), feigval.end(), std::greater<float>());
-
-      switch (d_algo)
-	{
-	case 1:
-	  /* Maximum-minimum eigenvalue detection algorithm */
-	  ratio = feigval[0] / feigval[feigval.size() - 1];
-	  break;
-	case 0:
-	  /* TODO: Average energy-minimum eigenvalue detection algorithm */
-	  break;
-	default:
-	  PHASMA_ERROR("Invalid detection algorithm");
-	  exit(-1);
+	d_noise_floor_est_cnt--; /* Apply window, check if need unaligned version */
+	volk_32fc_32f_multiply_32fc(&d_fft->get_inbuf()[0], in,
+			&d_blackmann_harris_win[0], d_fft_size);
+	d_fft->execute(); /* De-normalize with the size of wide FFT */
+	volk_32fc_s32fc_multiply_32fc(d_fft->get_outbuf(), d_fft->get_outbuf(),
+			d_norm_factor, d_fft_size); /* Calculate abs^2  (no dB scale) */
+	volk_32fc_magnitude_squared_32f(d_psd, d_fft->get_outbuf(), d_fft_size); /* Get maximum for each sub-carrier*/
+	for (size_t b = 0; b < d_fft_size; b++) {
+		d_noise_floor[b] = boost::minmax(d_noise_floor[b], d_psd[b]).get<1>();
 	}
 
-      if (ratio > d_threshold) {
-	PHASMA_LOG_INFO("***** Signal Detected *****");
-	out[0] = 1;
-      }
-      else {
-	PHASMA_LOG_INFO("===== Signal Absent =====");
-	out[0] = 0;
-      }
-      PHASMA_LOG_INFO("Algorithm: %u", d_algo);
-      PHASMA_LOG_INFO("Min Eigenvalue: %f", feigval[feigval.size() - 1]);
-      PHASMA_LOG_INFO("Max Eigenvalue: %f", feigval[0]);
-      PHASMA_LOG_INFO("Ratio: %f", ratio);
-      PHASMA_LOG_INFO("Threshold: %f \n", d_threshold);
+}
 
-      return 1;
-    }
-
-  } /* namespace phasma */
+} /* namespace phasma */
 } /* namespace gr */
 

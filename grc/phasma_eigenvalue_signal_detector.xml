@@ -4,61 +4,60 @@
   <key>phasma_eigenvalue_signal_detector</key>
   <category>[phasma]</category>
   <import>import phasma</import>
-  <make>phasma.eigenvalue_signal_detector($samples_num, 
-  										  $oversampling_factor,
+  <make>phasma.eigenvalue_signal_detector($eigen_samples, 
   										  $smoothing_factor,
 										  $pfa, 
-										  $algo)
+										  $fft_size, 
+										  $sampling_rate, 
+										  $actual_bw, 
+										  $noise_floor_est_cnt)
   </make>
   
   <param>
-    <name>Number of samples</name>
-    <key>samples_num</key>
+    <name>Eigenvalue Window</name>
+    <key>eigen_samples</key>
     <type>int</type>
   </param>
-  
+
   <param>
-    <name>Oversampling factor</name>
-    <key>oversampling_factor</key>
-    <type>int</type>
-  </param>
-  
-  
-  <param>
-    <name>Smoothing factor</name>
+    <name>Smoothing Factor</name>
     <key>smoothing_factor</key>
     <type>int</type>
   </param>
   
   <param>
-    <name>False-Alarm probability</name>
+    <name>False-Alarm Probability</name>
     <key>pfa</key>
     <type>float</type>
   </param>
   
   <param>
-    <name>Algorithm</name>
-    <key>algo</key>
-    <value>1</value>
+    <name>FFT Size</name>
+    <key>fft_size</key>
     <type>int</type>
-    <option>
-      <name>MME</name>
-      <key>1</key>
-    </option>
-    <option>
-      <name>EME</name>
-      <key>0</key>
-	</option>
+  </param>
+  
+  <param>
+    <name>Sampling Rate</name>
+    <key>sampling_rate</key>
+    <type>float</type>
+  </param>
+  
+  <param>
+    <name>Channel Bandwidth</name>
+    <key>actual_bw</key>
+    <type>float</type>
+  </param>
+  
+  <param>
+    <name>Noise-floor Estimations</name>
+    <key>noise_floor_est_cnt</key>
+    <type>int</type>
   </param>
 
   <sink>
 	<name>in</name>
 	<type>complex</type>
   </sink>
-
-  <source>
-	<name>out</name>
-	<type>int</type>
-  </source>
   
 </block>
