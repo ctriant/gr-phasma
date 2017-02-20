@@ -22,7 +22,10 @@
 ########################################################################
 cmake_minimum_required(VERSION 2.6)
 project(gr-phasma CXX C)
-enable_testing()
+# Enable C++11 support 
+set(CMAKE_CXX_STANDARD 11) 
+add_definitions(-std=c++11) 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
 
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
@@ -90,6 +93,16 @@ find_package(Armadillo REQUIRED)
 if (NOT ARMADILLO_FOUND)
     message(FATAL_ERROR "Armadillo required to compile phasma")
 endif()
+
+########################################################################
+# Find OpenCV
+########################################################################
+find_package(JSONcpp REQUIRED )
+
+if (NOT JSONCPP_FOUND)
+    message(FATAL_ERROR "JSONcpp required to compile phasma")
+endif()
+
 ########################################################################
 # Install directories
 ########################################################################
