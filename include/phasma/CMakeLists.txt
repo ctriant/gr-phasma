@@ -21,9 +21,11 @@
 # Install public header files
 ########################################################################
 install(FILES
+    utils/sigMF.h
     api.h
     log.h
     rforest_model.h
     eigenvalue_signal_detector.h 
-    opencv_predict.h DESTINATION include/phasma
+    opencv_predict.h
+    signal_extractor.h DESTINATION include/phasma
 )
