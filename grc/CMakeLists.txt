@@ -16,10 +16,10 @@
 # along with GNU Radio; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
-
 install(FILES
     phasma_rforest_model.xml
     phasma_eigenvalue_signal_detector.xml 
     phasma_opencv_predict.xml
-    phasma_signal_extractor.xml DESTINATION share/gnuradio/grc/blocks
+    phasma_signal_extractor.xml
+    phasma_sigmf_debug.xml DESTINATION share/gnuradio/grc/blocks
 )

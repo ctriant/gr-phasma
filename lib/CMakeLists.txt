@@ -29,14 +29,13 @@ include_directories(${Boost_INCLUDE_DIR}
 link_directories(${Boost_LIBRARY_DIRS})
 
 include_directories(${ARMADILLO_INCLUDE_DIRS})
-
 list(APPEND phasma_sources
     utils/sigMF.cc
     rforest_model_impl.cc
     eigenvalue_signal_detector_impl.cc
     opencv_predict_impl.cc
     signal_extractor_impl.cc
-)
+    sigmf_debug_impl.cc )
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
 if(NOT phasma_sources)

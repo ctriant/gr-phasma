@@ -299,9 +299,9 @@ sigMF::toJSON ()
   annotation["core:freq_upper_edge"] = d_freq_upper_edge;
   annotation["core:comment"] = d_comment;
 
-  root["annotation"] = annotation;
-  root["capture"] = capture_list;
   root["global"] = global;
+  root["capture"] = capture_list;
+  root["annotation"] = annotation;
 
   std::string json = root.toStyledString();
 

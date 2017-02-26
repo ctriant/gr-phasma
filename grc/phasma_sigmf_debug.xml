@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<block>
+  <name>sigmf_debug</name>
+  <key>phasma_sigmf_debug</key>
+  <category>[phasma]</category>
+  <import>import phasma</import>
+  <make>phasma.sigmf_debug($ifft_size, $conseq_channel_num)</make>
+  
+  <param>
+    <name>IFFT size</name>
+    <key>ifft_size</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Consecutive channels</name>
+    <key>conseq_channel_num</key>
+    <type>int</type>
+  </param>
+
+  <sink>
+    <name>sigmf</name>
+    <type>message</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+</block>

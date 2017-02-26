@@ -26,8 +26,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <phasma/utils/sigMF.h>
-#include <chrono>
-#include <ctime>
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include "signal_extractor_impl.h"
 
 namespace gr
@@ -69,11 +68,13 @@ namespace gr
 	    d_channel_num (d_total_bw / d_channel_bw),
 	    d_fft_size ((d_samp_rate * d_ifft_size) / d_channel_bw),
 	    d_signal_duration (signal_duration),
-	    d_snapshots_required(5),
+	    d_snapshots_required(1),
 	    d_threshold_db (threshold_db),
 	    d_threshold_linear (std::pow (10, d_threshold_db / 10)),
 	    d_sig_num(sig_num),
-	    d_conseq_channel_num(150)
+	    d_conseq_channel_num(150),
+	    d_abs_signal_start(0),
+	    d_abs_signal_end(0)
     {
       message_port_register_in (pmt::mp ("threshold"));
       message_port_register_out (pmt::mp ("out"));
@@ -98,7 +99,6 @@ namespace gr
 
       /* Allocate memory for possible useful IFFT plans*/
       for (size_t i = 0; i < d_conseq_channel_num; i++) {
-	std::cout << i << std::endl;
 	d_ifft_plans.push_back (
 	    new fft::fft_complex ((i + 1) * d_ifft_size, false, 1));
       }
@@ -124,8 +124,9 @@ namespace gr
     {
 
       /***C++11 Style:***/
-      std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
+      boost::posix_time::ptime current_date_microseconds;
+      long milliseconds;
+      boost::posix_time::time_duration current_time_milliseconds;
       const float *spectrum_mag = (const float *) input_items[0];
       const gr_complex *fft_in = (const gr_complex *) input_items[1];
 
@@ -142,6 +143,7 @@ namespace gr
 
       bool sig_alarm = false;
 
+      // TODO: Fix the case of multiple available snapshots
       for (size_t s = 0; s < available_snapshots; s++) {
 	/**
 	 * TODO: Search spectrum for transmissions.
@@ -166,6 +168,7 @@ namespace gr
 	       */
 	      if (!sig_alarm) {
 		sig_alarm = true;
+		d_abs_signal_start = i;
 		sig_slot_checkpoint = sig_slot_curr;
 	      }
 	      /**
@@ -176,9 +179,14 @@ namespace gr
 	       */
 	      else if (sig_slot_curr - sig_slot_checkpoint
 		  == d_conseq_channel_num - 1) {
-		std::time_t timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+		milliseconds = current_date_microseconds.time_of_day().total_milliseconds();
+		current_time_milliseconds = boost::posix_time::milliseconds(milliseconds);
+		boost::posix_time::ptime current_date_milliseconds(current_date_microseconds.date(),
+						      current_time_milliseconds);
+		d_abs_signal_end = i;
 		record_signal (fft_in, &d_signals, sig_slot_checkpoint, sig_slot_curr,
-			       std::ctime(&timestamp));
+			       boost::posix_time::to_iso_extended_string(current_date_milliseconds));
 		sig_slot_checkpoint = sig_slot_curr;
 		sig_alarm = false;
 		silence_count = d_silence_guardband;
@@ -192,9 +200,14 @@ namespace gr
 		// Full -legal span- signal observed
 		sig_alarm = false;
 		silence_count = d_silence_guardband;
-		std::time_t timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+		milliseconds = current_date_microseconds.time_of_day().total_milliseconds();
+		current_time_milliseconds = boost::posix_time::milliseconds(milliseconds);
+		boost::posix_time::ptime current_date_milliseconds(current_date_microseconds.date(),
+								      current_time_milliseconds);
+		d_abs_signal_end = i;
 		record_signal (fft_in, &d_signals, sig_slot_checkpoint, sig_slot_curr,
-			       std::ctime(&timestamp));
+			       boost::posix_time::to_iso_extended_string(current_date_milliseconds));
 		sig_count++;
 	      }
 	    }
@@ -206,21 +219,18 @@ namespace gr
 	 */
 	else {
 	  // TODO: What about timestamp when more than one snapshot available?
-//	  for (size_t i = 0; i < d_signals.size (); i++) {
-//	    	record_signal (fft_in, &d_signals, d_signals[i].start_slot_idx,
-//			   d_signals[i].end_slot_idx, std::ctime(&t));
-//	  	sig_count++;
-//	  }
 	}
-	msg = pmt::make_vector(sig_count, pmt::PMT_NIL);
-	for (size_t c=0; c < sig_count; c++) {
-	  pmt::vector_set(msg, c, d_msg_queue[c]);
+	if (sig_count > 0) {
+	  msg = pmt::make_vector(sig_count, pmt::PMT_NIL);
+	  for (size_t c=0; c < sig_count; c++) {
+	    pmt::vector_set(msg, c, d_msg_queue[c]);
+	  }
+	  message_port_pub (pmt::mp ("out"), msg);
+	  sig_count = 0;
 	}
-	message_port_pub (pmt::mp ("out"), msg);
 	d_signals.clear ();
-	d_signals.clear ();
+	d_msg_queue.clear ();
       }
-//      std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() <<std::endl;
       return noutput_items;
     }
 
@@ -232,55 +242,58 @@ namespace gr
     {
       // Insert record in the signal vector.
       phasma_signal_t sig_rec;
-      sig_rec.start_slot_idx = sig_slot_checkpoint;
-      sig_rec.end_slot_idx = curr_slot;
-      size_t span = sig_rec.end_slot_idx - sig_rec.start_slot_idx;
+      size_t ifft_idx;
+      size_t span;
       size_t iq_size_bytes;
 
-      const gr_complex* sig_ptr = &fft_in[sig_rec.start_slot_idx*d_ifft_size];
+      const gr_complex* sig_ptr = &fft_in[sig_slot_checkpoint * d_ifft_size];
+
+      /* */
+      ifft_idx = curr_slot - sig_slot_checkpoint;
+      span = curr_slot - sig_slot_checkpoint + 1;
+
       /**
        * Windowing and IFFT
        */
-      volk_32fc_32f_multiply_32fc(&d_ifft_plans[span]->get_inbuf()[0], sig_ptr,
-      			d_blackmann_harris_win[span], d_ifft_size*span);
-      d_ifft_plans[span]->execute();
-      memcpy(&d_ishift[0],&d_ifft_plans[span]->get_outbuf()[(d_ifft_size*span) / 2],
-			      sizeof(gr_complex) * (d_ifft_size*span) / 2);
-      memcpy(&d_ishift[(d_ifft_size*span) / 2], &d_ifft_plans[span]->get_outbuf()[0],
-      			      sizeof(gr_complex) * (d_ifft_size*span) / 2);
+//      volk_32fc_32f_multiply_32fc (&d_ifft_plans[ifft_idx]->get_inbuf ()[0],
+//				   sig_ptr, d_blackmann_harris_win[ifft_idx],
+//				   d_ifft_size * span);
+      memcpy (&d_ifft_plans[ifft_idx]->get_inbuf ()[0], sig_ptr,
+	      d_ifft_size * span * sizeof(gr_complex));
+      memcpy (d_ishift,
+	      &d_ifft_plans[ifft_idx]->get_inbuf ()[(d_ifft_size * span) / 2],
+	      ((d_ifft_size * span) / 2) * sizeof(gr_complex));
+      memcpy (&d_ishift[(d_ifft_size * span) / 2],
+	      d_ifft_plans[ifft_idx]->get_inbuf (),
+	      ((d_ifft_size * span) / 2) * sizeof(gr_complex));
+      memcpy (&d_ifft_plans[ifft_idx]->get_inbuf ()[0], d_ishift,
+      	      d_ifft_size * span * sizeof(gr_complex));
+      d_ifft_plans[ifft_idx]->execute ();
+      iq_size_bytes = span * d_ifft_size * d_snapshots_required * sizeof(gr_complex);
 
-      if (curr_slot - sig_slot_checkpoint == 0) {
-	iq_size_bytes = d_ifft_size * d_snapshots_required * sizeof(gr_complex);
-	sig_rec.iq_samples = (gr_complex*) malloc(iq_size_bytes);
-      }
-      else {
-	iq_size_bytes = ((sig_rec.end_slot_idx - sig_rec.start_slot_idx) + 1) * d_ifft_size
-	      * d_snapshots_required * sizeof(gr_complex);
-	sig_rec.iq_samples = (gr_complex*) malloc(iq_size_bytes);
-      }
-      memcpy(sig_rec.iq_samples, d_ishift, sizeof(gr_complex) * (d_ifft_size*span));
+      sig_rec.start_slot_idx = sig_slot_checkpoint;
+      sig_rec.end_slot_idx = curr_slot;
+      sig_rec.iq_samples = (gr_complex*) malloc (iq_size_bytes);
+      memcpy (sig_rec.iq_samples, d_ifft_plans[ifft_idx]->get_outbuf (),
+	      iq_size_bytes);
 
       d_signals.push_back (sig_rec);
-      PHASMA_DEBUG("--- SIGNAL RECORDED ---");
-      PHASMA_DEBUG("START: %d", d_signals.back().start_slot_idx);
-      PHASMA_DEBUG("END: %d", d_signals.back().end_slot_idx);
-
       sigMF meta = sigMF("cf32",
 			 "./",
 			 "0.0.1",
 			 0,
 			 d_samp_rate,
 			 timestamp,
-			 sig_slot_checkpoint*d_ifft_size,
-			 (curr_slot-sig_slot_checkpoint)*d_ifft_size,
+			 d_abs_signal_start,
+			 d_abs_signal_end - d_abs_signal_start,
 			 sig_slot_checkpoint * d_channel_bw,
 			 curr_slot * d_channel_bw,
 			 "");
-
       pmt::pmt_t tup = pmt::make_tuple(pmt::string_to_symbol(meta.toJSON()),
 				       pmt::make_blob(sig_rec.iq_samples, iq_size_bytes));
       d_msg_queue.push_back(tup);
 
+      memset(d_ishift, 0, d_conseq_channel_num * d_ifft_size * sizeof(gr_complex));
       free(sig_rec.iq_samples);
     }
 

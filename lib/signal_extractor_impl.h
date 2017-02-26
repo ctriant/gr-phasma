@@ -52,6 +52,9 @@ namespace gr
       const size_t d_sig_num;
       const size_t d_conseq_channel_num;
 
+      size_t d_abs_signal_start;
+      size_t d_abs_signal_end;
+
       typedef struct
       {
 	gr_complex* iq_samples;
