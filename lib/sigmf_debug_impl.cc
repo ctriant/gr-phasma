@@ -90,10 +90,10 @@ namespace gr {
       /* No way to know a priori the vector length, so just catch exception */
       while (true) {
 	try {
-	  std::cout << "Trying to get messages" << std::endl;
+//	  std::cout << "Trying to get messages" << std::endl;
 	  msg = delete_head_blocking(pmt::mp ("sigmf"));
 	  tuple = pmt::vector_ref(msg,0);
-	  std::cout << pmt::tuple_ref (tuple, 0) << std::endl;
+//	  std::cout << pmt::tuple_ref (tuple, 0) << std::endl;
 	  d_remaining = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 	      / sizeof(gr_complex);
 //	  std::cout << "Blob: " << d_remaining << std::endl;

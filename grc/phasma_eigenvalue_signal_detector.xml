@@ -10,8 +10,7 @@
 										  $fft_size, 
 										  $sampling_rate, 
 										  $actual_bw, 
-										  $noise_floor_est_cnt)
-  </make>
+										  $noise_floor_est_cnt)</make>
   
   <param>
     <name>Eigenvalue Window</name>
@@ -59,5 +58,11 @@
 	<name>in</name>
 	<type>complex</type>
   </sink>
+  
+  <source>
+	<name>threshold</name>
+	<type>message</type>
+  </source>
+  
   
 </block>

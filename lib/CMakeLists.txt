@@ -35,7 +35,8 @@ list(APPEND phasma_sources
     eigenvalue_signal_detector_impl.cc
     opencv_predict_impl.cc
     signal_extractor_impl.cc
-    sigmf_debug_impl.cc )
+    sigmf_debug_impl.cc
+    )
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
 if(NOT phasma_sources)

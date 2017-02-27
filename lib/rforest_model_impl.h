@@ -64,11 +64,17 @@ namespace gr
       /**
        * Auxiliary buffer
        */
-      gr_complex* d_input;
+      float* d_input;
+
+      std::vector<uint16_t> d_port_label;
+
+      void
+      bind_port_label(const std::vector<uint16_t> &labels);
 
     public:
       rforest_model_impl (const size_t npredictors, const size_t nobservations,
-			  const size_t ninport, const size_t max_depth,
+			  const size_t ninport, const std::vector<uint16_t> &labels,
+			  const size_t max_depth,
 			  const size_t min_sample_count,
 			  const size_t regression_accu,
 			  const uint8_t use_surrogates,

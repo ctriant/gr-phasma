@@ -21,5 +21,6 @@ install(FILES
     phasma_eigenvalue_signal_detector.xml 
     phasma_opencv_predict.xml
     phasma_signal_extractor.xml
-    phasma_sigmf_debug.xml DESTINATION share/gnuradio/grc/blocks
+    phasma_sigmf_debug.xml
+    DESTINATION share/gnuradio/grc/blocks
 )

@@ -81,6 +81,8 @@ namespace gr
 
       bool d_noise_floor_est;
 
+      bool d_status;
+
       static bool
       sort_using_greater_than (float u, float v)
       {

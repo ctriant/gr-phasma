@@ -50,7 +50,7 @@ namespace gr
       static sptr
       make (const size_t input_multiplier, const size_t classifier_type,
 	    size_t npredictors, const size_t d_ninport,
-	    const std::string filename);
+	    const std::vector<uint16_t> &labels, const std::string filename);
     };
 
   } // namespace phasma

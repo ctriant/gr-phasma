@@ -27,3 +27,4 @@ GR_SWIG_BLOCK_MAGIC2(phasma, signal_extractor);
 
 %include "phasma/sigmf_debug.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, sigmf_debug);
+

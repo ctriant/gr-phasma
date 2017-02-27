@@ -35,11 +35,12 @@ namespace gr
     opencv_predict::make (const size_t input_multiplier,
 			  const size_t classifier_type,
 			  const size_t npredictors, const size_t ninport,
+			  const std::vector<uint16_t> &labels,
 			  const std::string filename)
     {
       return gnuradio::get_initial_sptr (
 	  new opencv_predict_impl (input_multiplier, classifier_type,
-				   npredictors, ninport, filename));
+				   npredictors, ninport, labels, filename));
     }
 
     /*
@@ -49,10 +50,11 @@ namespace gr
 					      const size_t classifier_type,
 					      const size_t npredictors,
 					      const size_t ninport,
+					      const std::vector<uint16_t> &labels,
 					      const std::string filename) :
 	    gr::sync_block (
 		"opencv_predict",
-		gr::io_signature::make (1, ninport, sizeof(gr_complex)),
+		gr::io_signature::make (1, ninport, sizeof(float)),
 		gr::io_signature::make (0, 0, 0)),
 	    d_npredictors (npredictors),
 	    d_classifier_type (classifier_type),
@@ -60,7 +62,8 @@ namespace gr
 	    d_ninport (ninport),
 	    d_predictors (cv::Mat (1, npredictors, CV_32F)),
 	    d_labels (cv::Mat (1, ninport, CV_32F)),
-	    d_filename (filename)
+	    d_filename (filename),
+	    d_port_label(d_ninport)
     {
 
       message_port_register_out (pmt::intern ("classification"));
@@ -84,7 +87,8 @@ namespace gr
 	PHASMA_ERROR("Could not read the classifier ", d_filename);
       }
 
-      d_input = (gr_complex*) malloc (d_npredictors * sizeof(gr_complex));
+      d_input = (float*) malloc (d_npredictors * sizeof(float));
+      bind_port_label(labels);
 
     }
 
@@ -100,21 +104,21 @@ namespace gr
 			       gr_vector_const_void_star &input_items,
 			       gr_vector_void_star &output_items)
     {
-      const gr_complex *in = (const gr_complex *) input_items[0];
+      const float *in = (const float *) input_items[0];
 
       size_t available_observations = noutput_items / d_npredictors;
 
       for (size_t i = 0; i < available_observations; i++) {
 	for (size_t n = 0; n < d_ninport; n++) {
 
-	  in = (const gr_complex*) input_items[n];
+	  in = (const float*) input_items[n];
 
 	  /* Insert new dataset row */
 	  /* TODO: Handle complex */
 	  d_predictors = cv::Mat (1, d_npredictors, CV_32F, d_input);
 	  memcpy (d_predictors.ptr (), &in[i * d_npredictors],
-		  d_npredictors * sizeof(gr_complex));
-	  d_labels.at<float> (0, 0) = n;
+		  d_npredictors * sizeof(float));
+	  d_labels.at<float> (0, 0) = d_port_label[n];
 	  d_data = cv::ml::TrainData::create (d_predictors, cv::ml::ROW_SAMPLE,
 					      d_labels);
 	  d_data->setTrainTestSplitRatio (0);
@@ -144,6 +148,13 @@ namespace gr
 	}
       }
       return noutput_items;
+    }
+
+    void
+    opencv_predict_impl::bind_port_label (
+	const std::vector<uint16_t> &labels)
+    {
+      d_port_label = labels;
     }
 
   } /* namespace phasma */
