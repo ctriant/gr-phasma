@@ -7,6 +7,7 @@
 	<make>phasma.rforest_model($npredictors,
 		$nobservations,
 		$ninport,
+		$labels,
 		$max_depth,
 		$min_sample_count,
 		$regression_accu,
@@ -17,7 +18,8 @@
 		$max_iter,
 		$filename)
 	</make>
-
+	
+	<callback>bind_port_label(labels)</callback>
 
 	<param>
 		<name>Predictors number</name>
@@ -36,6 +38,13 @@
 		<key>ninport</key>
 		<type>int</type>
 	</param>
+
+	<param>
+	   	<name>Labels</name>
+	   	<key>labels</key>
+	   	<value>()</value>
+		<type>raw</type>
+	</param> 
 
 	<param>
 		<name>Max depth</name>
@@ -117,7 +126,7 @@
 
 	<sink>
 		<name>in</name>
-		<type>complex</type>
+		<type>float</type>
 		<nports>$ninport</nports>
 	</sink>
 

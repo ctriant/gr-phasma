@@ -28,5 +28,6 @@ install(FILES
     eigenvalue_signal_detector.h 
     opencv_predict.h
     signal_extractor.h
-    sigmf_debug.h DESTINATION include/phasma
+    sigmf_debug.h
+    DESTINATION include/phasma
 )

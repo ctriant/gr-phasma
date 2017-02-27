@@ -298,6 +298,7 @@ sigMF::toJSON ()
   annotation["core:freq_lower_edge"] = d_freq_lower_edge;
   annotation["core:freq_upper_edge"] = d_freq_upper_edge;
   annotation["core:comment"] = d_comment;
+  annotation["span"] = (d_freq_upper_edge/20e3) - (d_freq_lower_edge/20e3) + 1;
 
   root["global"] = global;
   root["capture"] = capture_list;

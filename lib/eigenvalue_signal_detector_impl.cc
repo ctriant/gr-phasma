@@ -75,11 +75,15 @@ namespace gr
 	    d_subcarriers_num (2 * d_num_samps_per_side),
 	    d_norm_factor (1 / (float) d_fft_size, 0),
 	    d_noise_floor_est_cnt (noise_floor_est_cnt),
-	    d_noise_floor_est (true)
+	    d_noise_floor_est (true),
+	    d_status(true)
 
     {
       /* Process in a per-FFT basis */
       set_output_multiple (d_fft_size);
+
+      /* Outgoing message port */
+      message_port_register_out (pmt::mp ("threshold"));
 
       /* Compute the decision threshold for the eigenvalue detector */
       d_eigen_threshold = eigen_threshold_estimation ();
@@ -145,66 +149,82 @@ namespace gr
       float ratio;
       size_t noise_free = 0;
 
-      /*
-       * TODO: Actually the number of possible iterations is larger.
-       * Number of input samples is a multiple of fft_size.
-       * For now a kind of decimation is performed and only the first chunk of
-       * fft_size samples is handled.
-       */
+      switch (d_status)
+	{
+	case 1:
+	  /*
+	   * TODO: Actually the number of possible iterations is larger.
+	   * Number of input samples is a multiple of fft_size.
+	   * For now a kind of decimation is performed and only the first chunk of
+	   * fft_size samples is handled.
+	   */
 
-      size_t iter_num = d_fft_size / d_eigen_samples;
-      const gr_complex *win_ptr;
-      arma::cx_fmat X = arma::cx_fmat (d_eigen_samples, d_smoothing_factor);
-      arma::cx_fmat R;
-      arma::cx_fcolvec eigval;
-      std::vector<float> feigval (d_smoothing_factor);
-      // Handle all possible chunks of eigen_samples
-      for (size_t it = 0; it < iter_num; it++) {
-	// Last iteration should use previous samples
-	if (it == iter_num - 1) {
-	  win_ptr = &in[(it - 1) + d_eigen_samples - d_smoothing_factor - 1];
-	}
-	else {
-	  win_ptr = &in[it];
-	}
-	memcpy (&X[0], win_ptr, d_eigen_samples * sizeof(gr_complex));
-	for (size_t i = 1; i < d_smoothing_factor; i++) {
-	  memcpy (&X[(d_eigen_samples * i)], &win_ptr[i],
-		  d_eigen_samples * sizeof(gr_complex));
-	}
+	  size_t iter_num = d_fft_size / d_eigen_samples;
+	  const gr_complex *win_ptr;
+	  arma::cx_fmat X = arma::cx_fmat (d_eigen_samples, d_smoothing_factor);
+	  arma::cx_fmat R;
+	  arma::cx_fcolvec eigval;
+	  std::vector<float> feigval (d_smoothing_factor);
+	  // Handle all possible chunks of eigen_samples
+	  for (size_t it = 0; it < iter_num; it++) {
+	    // Last iteration should use previous samples
+	    if (it == iter_num - 1) {
+	      win_ptr =
+		  &in[(it - 1) + d_eigen_samples - d_smoothing_factor - 1];
+	    }
+	    else {
+	      win_ptr = &in[it];
+	    }
+	    memcpy (&X[0], win_ptr, d_eigen_samples * sizeof(gr_complex));
+	    for (size_t i = 1; i < d_smoothing_factor; i++) {
+	      memcpy (&X[(d_eigen_samples * i)], &win_ptr[i],
+		      d_eigen_samples * sizeof(gr_complex));
+	    }
 
-	R = arma::cov (X);
-	arma::eig_gen (eigval, R);
-	for (size_t t = 0; t < eigval.n_elem; t++) {
-	  feigval[t] = std::abs (eigval (t));
-	}
-	std::sort (feigval.begin (), feigval.end (), std::greater<float> ());
-	/* Maximum-minimum eigenvalue detection algorithm */
-	ratio = feigval[0] / feigval[feigval.size () - 1];
+	    R = arma::cov (X);
+	    arma::eig_gen (eigval, R);
+	    for (size_t t = 0; t < eigval.n_elem; t++) {
+	      feigval[t] = std::abs (eigval (t));
+	    }
+	    std::sort (feigval.begin (), feigval.end (),
+		       std::greater<float> ());
+	    /* Maximum-minimum eigenvalue detection algorithm */
+	    ratio = feigval[0] / feigval[feigval.size () - 1];
 
-	if (ratio <= d_eigen_threshold) {
-	  noise_free++;
-	  PHASMA_DEBUG("***** Signal Absent *****"); PHASMA_DEBUG("Eigenvalues num: %d", eigval.n_elem); PHASMA_DEBUG("Min Eigenvalue: %f", feigval[feigval.size() - 1]); PHASMA_DEBUG("Max Eigenvalue: %f", feigval[0]); PHASMA_DEBUG("Ratio: %f", ratio); PHASMA_DEBUG("Threshold: %f \n", d_eigen_threshold);
-	}
-	else {
-//			PHASMA_DEBUG("I see land!");
-	}
-      }
+	    if (ratio <= d_eigen_threshold) {
+	      noise_free++;
+	      PHASMA_DEBUG("***** Signal Absent *****");
+	      PHASMA_DEBUG("Eigenvalues num: %d", eigval.n_elem);
+	      PHASMA_DEBUG("Min Eigenvalue: %f", feigval[feigval.size () - 1]);
+	      PHASMA_DEBUG("Max Eigenvalue: %f", feigval[0]);
+	      PHASMA_DEBUG("Ratio: %f", ratio);
+	      PHASMA_DEBUG("Threshold: %f \n", d_eigen_threshold);
+	    }
+	    else {
 
-      if (d_noise_floor_est && noise_free == iter_num
-	  && d_noise_floor_est_cnt > 0) {
-	PHASMA_DEBUG("Ok sailor! Bring me a good bottle of noise-floor rum.");
-	noise_floor_estimation (in, noutput_items);
-	/* Perform shifting and cropping on squared magnitude max noise-floor*/
-	memcpy (&d_shift[0],
-		&d_noise_floor[(d_fft_size / 2) + d_num_samps_to_discard],
-		sizeof(float) * (d_num_samps_per_side));
-	memcpy (&d_shift[d_num_samps_per_side], &d_noise_floor[0],
-		sizeof(float) * (d_num_samps_per_side));
-	for (size_t t = 0; t < d_subcarriers_num; t++) {
-	  std::cout << 10 * log10 (d_shift[t]) << std::endl;
+	    }
+	  }
+
+	  if (d_noise_floor_est && noise_free == iter_num
+	      && d_noise_floor_est_cnt > 0) {
+	    PHASMA_DEBUG(
+		"Ok sailor! Bring me a good bottle of noise-floor rum.");
+	    noise_floor_estimation (in, noutput_items);
+	    /* Perform shifting and cropping on squared magnitude max noise-floor*/
+	    memcpy (&d_shift[0],
+		    &d_noise_floor[(d_fft_size / 2) + d_num_samps_to_discard],
+		    sizeof(float) * (d_num_samps_per_side));
+	    memcpy (&d_shift[d_num_samps_per_side], &d_noise_floor[0],
+		    sizeof(float) * (d_num_samps_per_side));
+	    if (!d_noise_floor_est_cnt) {
+	      d_status = false;
+	      message_port_pub (
+		  pmt::mp ("threshold"),
+		  pmt::make_blob (d_shift, d_subcarriers_num * sizeof(float)));
+	    }
+	  }
+	  break;
 	}
-      }
 
       return noutput_items;
 

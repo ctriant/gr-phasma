@@ -41,7 +41,7 @@ namespace gr
       size_t d_ninport;
       size_t d_classifier_type;
       
-      gr_complex* d_input;
+      float* d_input;
       
       cv::Mat d_predictors;
       cv::Mat d_labels;
@@ -50,11 +50,16 @@ namespace gr
       cv::Ptr<cv::ml::StatModel> d_model;
 
       const std::string d_filename;
+      std::vector<uint16_t> d_port_label;
+
+      void
+      bind_port_label(const std::vector<uint16_t> &labels);
 
     public:
       opencv_predict_impl (const size_t input_multiplier,
 			   const size_t classifier_type,
 			   const size_t npredictors, const size_t d_ninport,
+			   const std::vector<uint16_t> &labels,
 			   const std::string filename);
       ~opencv_predict_impl ();
 
