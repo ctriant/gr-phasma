@@ -22,38 +22,35 @@
 #define INCLUDED_PHASMA_OPENCV_PREDICT_H
 
 #include <phasma/api.h>
-#include <gnuradio/sync_block.h>
+#include <gnuradio/block.h>
 
-namespace gr
-{
-  namespace phasma
-  {
+namespace gr {
+namespace phasma {
 
-    /*!
-     * \brief <+description of block+>
-     * \ingroup phasma
-     *
-     */
-    class PHASMA_API opencv_predict : virtual public gr::sync_block
-    {
-    public:
-      typedef boost::shared_ptr<opencv_predict> sptr;
+/*!
+ * \brief <+description of block+>
+ * \ingroup phasma
+ *
+ */
+class PHASMA_API opencv_predict: virtual public gr::block {
+public:
+	typedef boost::shared_ptr<opencv_predict> sptr;
 
-      /*!
-       * \brief Return a shared_ptr to a new instance of phasma::opencv_predict.
-       *
-       * To avoid accidental use of raw pointers, phasma::opencv_predict's
-       * constructor is in a private implementation
-       * class. phasma::opencv_predict::make is the public interface for
-       * creating new instances.
-       */
-      static sptr
-      make (const size_t input_multiplier, const size_t classifier_type,
-	    size_t npredictors, const size_t d_ninport,
-	    const std::vector<uint16_t> &labels, const std::string filename);
-    };
+	/*!
+	 * \brief Return a shared_ptr to a new instance of phasma::opencv_predict.
+	 *
+	 * To avoid accidental use of raw pointers, phasma::opencv_predict's
+	 * constructor is in a private implementation
+	 * class. phasma::opencv_predict::make is the public interface for
+	 * creating new instances.
+	 */
+	static sptr
+	make(const size_t classifier_type, size_t data_type, size_t npredictors,
+			const size_t nlabels, const std::string filename);
+	
+};
 
-  } // namespace phasma
+} // namespace phasma
 } // namespace gr
 
 #endif /* INCLUDED_PHASMA_OPENCV_PREDICT_H */
