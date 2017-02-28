@@ -4,22 +4,13 @@
   <key>phasma_opencv_predict</key>
   <category>[phasma]</category>
   <import>import phasma</import>
-  <make>phasma.opencv_predict($input_multiplier,
-			  				  $classifier_type,
+  <make>phasma.opencv_predict($classifier_type,
+  							  $data_type,
 			   				  $npredictors,
-			   				  $ninport,
-			   				  $labels,
+			   				  $nlabels,
 			   				  $filename)</make>
 			   				  
-	<callback>bind_port_label(labels)</callback>
 			   				  
-	<param>
-		<name>Input multiplier</name>
-		<key>input_multiplier</key>
-		<value>100</value>
-		<type>int</type>
-	</param>
-
 	<param>
 		<name>Classification Method</name>
 		<key>classifier_type</key>
@@ -27,6 +18,20 @@
 		<option>
 			<name>Random Forest</name>
 			<key>0</key>
+		</option>
+	</param>
+
+	<param>
+		<name>IO Type</name>
+		<key>data_type</key>
+		<type>enum</type>
+		<option>
+			<name>Complex</name>
+			<key>3</key>
+		</option>
+		<option>
+			<name>Float</name>
+			<key>1</key>
 		</option>
 	</param>
 	
@@ -37,17 +42,10 @@
 	</param>
 	
 	<param>
-		<name>Input ports number</name>
-		<key>ninport</key>
+		<name>Expected labels number</name>
+		<key>nlabels</key>
 		<type>int</type>
 	</param>
-	
-	<param>
-	   	<name>Labels</name>
-	   	<key>labels</key>
-	   	<value>()</value>
-		<type>raw</type>
-	</param> 
 	
 	<param>
 		<name>Trained Model</name>
@@ -57,13 +55,12 @@
 	
 	<sink>
 		<name>in</name>
-		<type>float</type>
-		<nports>$ninport</nports>
+		<type>message</type>
 	</sink>
 	
 	<source>
     	<name>classification</name>
- 	<type>message</type>
-</source>
+ 		<type>message</type>
+	</source>
   
 </block>

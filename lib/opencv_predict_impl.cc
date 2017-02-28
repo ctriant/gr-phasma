@@ -23,140 +23,177 @@
 #endif
 
 #include <gnuradio/io_signature.h>
+#include <volk/volk.h>
 #include <pmt/pmt.h>
 #include "opencv_predict_impl.h"
 
-namespace gr
-{
-  namespace phasma
-  {
+namespace gr {
+namespace phasma {
 
-    opencv_predict::sptr
-    opencv_predict::make (const size_t input_multiplier,
-			  const size_t classifier_type,
-			  const size_t npredictors, const size_t ninport,
-			  const std::vector<uint16_t> &labels,
-			  const std::string filename)
-    {
-      return gnuradio::get_initial_sptr (
-	  new opencv_predict_impl (input_multiplier, classifier_type,
-				   npredictors, ninport, labels, filename));
-    }
+opencv_predict::sptr 
+opencv_predict::make(const size_t classifier_type,
+		const size_t data_type, const size_t npredictors, const size_t nlabels,
+		const std::string filename) {
+	return gnuradio::get_initial_sptr(
+			new opencv_predict_impl(classifier_type, data_type, npredictors,
+					nlabels, filename));
+}
 
-    /*
-     * The private constructor
-     */
-    opencv_predict_impl::opencv_predict_impl (const size_t input_multiplier,
-					      const size_t classifier_type,
-					      const size_t npredictors,
-					      const size_t ninport,
-					      const std::vector<uint16_t> &labels,
-					      const std::string filename) :
-	    gr::sync_block (
-		"opencv_predict",
-		gr::io_signature::make (1, ninport, sizeof(float)),
-		gr::io_signature::make (0, 0, 0)),
-	    d_npredictors (npredictors),
-	    d_classifier_type (classifier_type),
-	    d_input_multiplier (input_multiplier),
-	    d_ninport (ninport),
-	    d_predictors (cv::Mat (1, npredictors, CV_32F)),
-	    d_labels (cv::Mat (1, ninport, CV_32F)),
-	    d_filename (filename),
-	    d_port_label(d_ninport)
-    {
+/*
+ * The private constructor
+ */
+opencv_predict_impl::opencv_predict_impl(const size_t classifier_type,
+		const size_t data_type, const size_t npredictors, const size_t nlabels,
+		const std::string filename) :
+		gr::block("opencv_predict", gr::io_signature::make(0, 0, 0),
+				gr::io_signature::make(0, 0, 0)), d_classifier_type(
+				classifier_type), d_data_type(data_type), d_npredictors(
+				npredictors), d_labels (cv::Mat (1, nlabels, CV_32F)), d_nlabels(nlabels),
+				d_predictors(cv::Mat(1, npredictors, CV_32F)), d_filename(
+				filename) {
 
-      message_port_register_out (pmt::intern ("classification"));
-      set_output_multiple (d_input_multiplier * d_npredictors);
+	message_port_register_in(pmt::mp("in"));
+	message_port_register_out(pmt::mp("classification"));
 
-      switch (d_classifier_type)
-	{
-	case RANDOM_FOREST:
-	  {
-	    d_model = cv::Algorithm::load<cv::ml::RTrees> (d_filename);
-	  }
-	  break;
-	default:
-	  {
-	    PHASMA_ERROR("Unsupported ML classifier");
-	  }
-	  break;
+	switch (d_classifier_type) {
+	case RANDOM_FOREST: {
+		d_model = cv::Algorithm::load<cv::ml::RTrees>(d_filename);
+	}
+		break;
+	default: {
+		PHASMA_ERROR("Unsupported ML classifier");
+	}
+		break;
 	}
 
-      if (d_model.empty ()) {
-	PHASMA_ERROR("Could not read the classifier ", d_filename);
-      }
-
-      d_input = (float*) malloc (d_npredictors * sizeof(float));
-      bind_port_label(labels);
-
-    }
-
-    /*
-     * Our virtual destructor.
-     */
-    opencv_predict_impl::~opencv_predict_impl ()
-    {
-    }
-
-    int
-    opencv_predict_impl::work (int noutput_items,
-			       gr_vector_const_void_star &input_items,
-			       gr_vector_void_star &output_items)
-    {
-      const float *in = (const float *) input_items[0];
-
-      size_t available_observations = noutput_items / d_npredictors;
-
-      for (size_t i = 0; i < available_observations; i++) {
-	for (size_t n = 0; n < d_ninport; n++) {
-
-	  in = (const float*) input_items[n];
-
-	  /* Insert new dataset row */
-	  /* TODO: Handle complex */
-	  d_predictors = cv::Mat (1, d_npredictors, CV_32F, d_input);
-	  memcpy (d_predictors.ptr (), &in[i * d_npredictors],
-		  d_npredictors * sizeof(float));
-	  d_labels.at<float> (0, 0) = d_port_label[n];
-	  d_data = cv::ml::TrainData::create (d_predictors, cv::ml::ROW_SAMPLE,
-					      d_labels);
-	  d_data->setTrainTestSplitRatio (0);
-
-	  cv::Mat predict_labels;
-	  pmt::pmt_t pmt_msg = pmt::make_dict ();
-	  switch (d_classifier_type)
-	    {
-	    case RANDOM_FOREST:
-	      {
-		reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
-		    d_data->getSamples (), predict_labels);
-		pmt_msg = pmt::dict_add (
-		    pmt_msg, pmt::string_to_symbol ("Original"),
-		    pmt::from_float (d_labels.at<float> (0)));
-		pmt_msg = pmt::dict_add (
-		    pmt_msg, pmt::string_to_symbol ("Predicted"),
-		    pmt::from_float (predict_labels.at<float> (0)));
-		message_port_pub (pmt::intern ("classification"), pmt_msg);
-		break;
-	      }
-	    default:
-	      {
-		break;
-	      }
-	    }
+	if (d_model.empty()) {
+		PHASMA_ERROR("Could not read the classifier ", d_filename);
 	}
-      }
-      return noutput_items;
-    }
 
-    void
-    opencv_predict_impl::bind_port_label (
-	const std::vector<uint16_t> &labels)
-    {
-      d_port_label = labels;
-    }
+	// TODO: Fix hard-coded value. Mind buffer sizes cause it's a mess.
+	d_input = new gr_complex[d_npredictors * 1000];
+	d_input_re = (float*)volk_malloc(sizeof(float)*d_npredictors * 1000, 32);
+	d_input_imag = (float*)volk_malloc(sizeof(float)*d_npredictors * 1000, 32);
+	
+	/*  */
+	d_trigger_thread =
+			boost::shared_ptr<boost::thread>(
+					new boost::thread(
+							boost::bind(
+									&opencv_predict_impl::msg_handler_trigger,
+									this)));
+}
 
-  } /* namespace phasma */
+/*
+ * Our virtual destructor.
+ */
+opencv_predict_impl::~opencv_predict_impl() {
+	delete [] d_input;
+	volk_free(d_input_re);
+	volk_free(d_input_imag);
+}
+
+void 
+opencv_predict_impl::msg_handler_trigger() {
+	
+	pmt::pmt_t msg;
+	pmt::pmt_t tuple;
+	size_t curr_sig = 0;
+	size_t available_samples = 0;
+	size_t available_observations = 0;
+	void* data;
+	std::vector<float> predictions;
+
+	while (true) {
+		try {
+			// Access the message queue
+			msg = delete_head_blocking(pmt::mp("in"));
+			tuple = pmt::vector_ref(msg, curr_sig);
+			//std::cout<< pmt::tuple_ref(tuple, 0) << std::endl;
+			/* TODO: Handle complex */
+			switch (d_data_type) {
+			case COMPLEX:
+				data = (gr_complex *)pmt::blob_data(pmt::tuple_ref(tuple, 1));
+				available_samples = pmt::blob_length(pmt::tuple_ref(tuple, 1))/sizeof(gr_complex);
+				volk_32fc_deinterleave_32f_x2_a(d_input_re, d_input_imag, (gr_complex *)data,
+						available_samples);
+				
+				// Finally we handle floats
+				available_samples = available_samples * 2;
+				
+				// Convert iq samples into a interleaved vector
+				for(size_t s=0; s<available_samples-1; s++) {
+					d_input[s] = d_input_re[s];
+					d_input[s+1] = d_input_re[s];
+				}
+				break;
+			case FLOAT:
+				data = (float *)pmt::blob_data(pmt::tuple_ref(tuple, 1));
+				available_samples = pmt::blob_length(pmt::tuple_ref(tuple, 1))/sizeof(float);;
+				memcpy(d_input, data, pmt::blob_length(pmt::tuple_ref(tuple, 1)));
+				break;
+			}
+			
+			/**
+			 * Iterate through all available observations of data provided by
+			 * the incoming tuple message
+			 */
+			available_observations = available_samples / d_npredictors;
+			for (size_t i = 0; i < available_observations; i++) {
+				/* Insert new dataset row */
+				d_predictors = cv::Mat(1, d_npredictors, CV_32F, d_input);
+				memcpy(d_predictors.ptr(), &d_input[i*d_npredictors],
+						d_npredictors * sizeof(float));
+				d_labels.at<float>(0, 0) = 0;
+				d_data = cv::ml::TrainData::create(d_predictors,
+						cv::ml::ROW_SAMPLE, d_labels);
+				d_data->setTrainTestSplitRatio(0);
+
+				cv::Mat predict_labels;
+				switch (d_classifier_type) {
+				case RANDOM_FOREST: {
+					predictions.push_back(
+							reinterpret_cast<cv::Ptr<cv::ml::RTrees>&>(d_model)->predict(
+									d_data->getSamples(), predict_labels));
+					break;
+				}
+				default: {
+					break;
+				}
+				}
+			}
+			pmt::pmt_t pmt_msg = pmt::make_dict();
+			pmt_msg = pmt::dict_add(pmt_msg, pmt::string_to_symbol("Predicted"),
+					pmt::from_float(get_most_freq_decision(&predictions)));
+			message_port_pub(pmt::intern("classification"), pmt_msg);
+			predictions.clear();
+			// Go catch the next tuple of the incoming vector message
+			curr_sig++;
+		} catch (pmt::out_of_range&) {
+			/* You are out of range so break */
+			std::cout<< "Out of range" << std::endl;
+			curr_sig = 0;
+		}
+	}
+}
+
+float
+opencv_predict_impl::get_most_freq_decision(std::vector<float>* predictions){
+	size_t max = 0;
+	size_t tmp = 0;
+	float max_idx = 0;
+	
+	for (size_t i=0; i<d_nlabels; i++) {
+		tmp = std::count(predictions->begin(), predictions->end(), i);
+		if (tmp > max) {
+			max = tmp;
+			max_idx = i;
+		}
+	}
+	return max_idx;
+}
+
+
+} /* namespace phasma */
 } /* namespace gr */
 

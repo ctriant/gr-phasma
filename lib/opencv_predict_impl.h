@@ -27,48 +27,46 @@
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
+#include <pthread.h>
 
-namespace gr
-{
-  namespace phasma
-  {
+namespace gr {
+namespace phasma {
 
-    class opencv_predict_impl : public opencv_predict
-    {
-    private:
-      size_t d_npredictors;
-      size_t d_input_multiplier;
-      size_t d_ninport;
-      size_t d_classifier_type;
-      
-      float* d_input;
-      
-      cv::Mat d_predictors;
-      cv::Mat d_labels;
-      cv::Ptr<cv::ml::TrainData> d_data;
+class opencv_predict_impl: public opencv_predict {
+private:
+	size_t d_npredictors;
+	size_t d_nlabels;
+	size_t d_classifier_type;
+	size_t d_data_type;
 
-      cv::Ptr<cv::ml::StatModel> d_model;
+	gr_complex* d_input;
+	float* d_input_re;
+	float* d_input_imag;
+	
+	cv::Mat d_predictors;
+	cv::Ptr<cv::ml::TrainData> d_data;
 
-      const std::string d_filename;
-      std::vector<uint16_t> d_port_label;
+	cv::Ptr<cv::ml::StatModel> d_model;
+	cv::Mat d_labels;
 
-      void
-      bind_port_label(const std::vector<uint16_t> &labels);
+	const std::string d_filename;
+	
+	boost::shared_ptr<boost::thread> d_trigger_thread;
 
-    public:
-      opencv_predict_impl (const size_t input_multiplier,
-			   const size_t classifier_type,
-			   const size_t npredictors, const size_t d_ninport,
-			   const std::vector<uint16_t> &labels,
-			   const std::string filename);
-      ~opencv_predict_impl ();
+	float
+	get_most_freq_decision(std::vector<float>* predictions);
 
-      int
-      work (int noutput_items, gr_vector_const_void_star &input_items,
-	    gr_vector_void_star &output_items);
-    };
+public:
+	opencv_predict_impl(const size_t classifier_type, const size_t data_type,
+			const size_t npredictors, const size_t nlabels, 
+			const std::string filename);
+	~opencv_predict_impl();
 
-  } // namespace phasma
+	void 
+	msg_handler_trigger();
+};
+
+} // namespace phasma
 } // namespace gr
 
 #endif /* INCLUDED_PHASMA_OPENCV_PREDICT_IMPL_H */
