@@ -48,6 +48,8 @@ namespace gr
       size_t d_snapshots_required;
 
       const float d_threshold_db;
+      const float d_threshold_margin_db;
+      const float d_threshold_margin_linear;
       const float d_threshold_linear;
       const size_t d_sig_num;
       const size_t d_conseq_channel_num;
@@ -73,13 +75,8 @@ namespace gr
 
       std::vector<pmt::pmt_t> d_msg_queue;
 
-    public:
-      signal_extractor_impl (float samp_rate, float total_bw,
-			     float channel_bw, size_t ifft_size,
-			     size_t silence_guardband, float signal_duration,
-			     float threshold_db, size_t sig_num);
-
-      ~signal_extractor_impl ();
+      /* Vector that holds linear noise floor */
+      float* d_noise_floor;
 
       void
       record_signal (const gr_complex* fft_in,
@@ -87,9 +84,22 @@ namespace gr
 		     size_t sig_slot_checkpoint,
 		     size_t curr_slot, std::string time);
 
+    public:
+      signal_extractor_impl (float samp_rate, float total_bw,
+			     float channel_bw, size_t ifft_size,
+			     size_t silence_guardband, float signal_duration,
+			     float threshold_db, float threshold_margin_db,
+			     size_t sig_num);
+
+      ~signal_extractor_impl ();
+
+      void
+      msg_handler_noise_floor (pmt::pmt_t msg);
+
       int
       work (int noutput_items, gr_vector_const_void_star &input_items,
 	    gr_vector_void_star &output_items);
+
     };
 
   } // namespace phasma

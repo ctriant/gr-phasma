@@ -48,7 +48,8 @@ namespace gr {
        */
       static sptr make(float samp_rate, float total_bw, float channel_bw,
 		       size_t ifft_size, size_t silence_guardband,
-		       float signal_duration, float threshold_db, size_t sig_num);
+		       float signal_duration, float threshold_db,
+		       float threshold_margin_db, size_t sig_num);
     };
 
   } // namespace phasma

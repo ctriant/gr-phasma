@@ -109,7 +109,7 @@ opencv_predict_impl::msg_handler_trigger() {
 			// Access the message queue
 			msg = delete_head_blocking(pmt::mp("in"));
 			tuple = pmt::vector_ref(msg, curr_sig);
-			//std::cout<< pmt::tuple_ref(tuple, 0) << std::endl;
+			std::cout<< pmt::tuple_ref(tuple, 0) << std::endl;
 			/* TODO: Handle complex */
 			switch (d_data_type) {
 			case COMPLEX:
