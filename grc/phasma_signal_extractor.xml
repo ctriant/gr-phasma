@@ -6,7 +6,7 @@
   <import>import phasma</import>
   <make>phasma.signal_extractor($samp_rate, $total_bw, $channel_bw, $ifft_size, 
   								$silence_guardband, $signal_duration, $threshold_db,
-  								$sig_num)</make>
+  								$threshold_margin_db, $sig_num)</make>
   						
   <param>
     <name>Sampling Rate</name>
@@ -56,6 +56,13 @@
     <value>-100</value>
     <type>float</type>
   </param>
+  
+  <param>
+    <name>Energy Threshold Margin (dB)</name>
+    <key>threshold_margin_db</key>
+    <value>5</value>
+    <type>float</type>
+  </param>
 
   <param>
     <name>Number of Signals</name>
@@ -75,7 +82,7 @@
   </sink>
 
   <sink>
-    <name>threshold</name>
+    <name>threshold_rcv</name>
     <type>message</type>
     <optional>1</optional>
   </sink>

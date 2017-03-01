@@ -38,12 +38,13 @@ namespace gr
     signal_extractor::make (float samp_rate, float total_bw,
 			    float channel_bw, size_t ifft_size,
 			    size_t silence_guardband, float signal_duration,
-			    float threshold_db, size_t sig_num)
+			    float threshold_db, float threshold_margin_db,
+			    size_t sig_num)
     {
       return gnuradio::get_initial_sptr (
 	  new signal_extractor_impl (samp_rate, total_bw, channel_bw, ifft_size,
 				     silence_guardband, signal_duration,
-				     threshold_db, sig_num));
+				     threshold_db, threshold_margin_db, sig_num));
     }
 
     /*
@@ -56,6 +57,7 @@ namespace gr
 						  size_t silence_guardband,
 						  float signal_duration,
 						  float threshold_db,
+						  float threshold_margin_db,
 						  size_t sig_num) :
 	    gr::sync_block ("signal_extractor",
 			    gr::io_signature::make2(2, 2, sizeof(float), sizeof(gr_complex)),
@@ -70,17 +72,23 @@ namespace gr
 	    d_signal_duration (signal_duration),
 	    d_snapshots_required(1),
 	    d_threshold_db (threshold_db),
+	    d_threshold_margin_db(threshold_margin_db),
+	    d_threshold_margin_linear(std::pow (10, d_threshold_margin_db / 10)),
 	    d_threshold_linear (std::pow (10, d_threshold_db / 10)),
 	    d_sig_num(sig_num),
-	    d_conseq_channel_num(150),
+	    d_conseq_channel_num(250),
 	    d_abs_signal_start(0),
 	    d_abs_signal_end(0)
     {
-      message_port_register_in (pmt::mp ("threshold"));
-      message_port_register_out (pmt::mp ("out"));
-
       /* Process in a per-FFT basis */
       set_output_multiple (d_fft_size);
+
+      message_port_register_in (pmt::mp ("threshold_rcv"));
+      set_msg_handler (
+	  pmt::mp ("threshold_rcv"),
+	  boost::bind (&signal_extractor_impl::msg_handler_noise_floor, this, _1));
+
+      message_port_register_out (pmt::mp ("out"));
 
       d_ishift = (gr_complex*) volk_malloc (
 	  d_conseq_channel_num * d_ifft_size * sizeof(gr_complex), 32);
@@ -103,6 +111,9 @@ namespace gr
 	    new fft::fft_complex ((i + 1) * d_ifft_size, false, 1));
       }
 
+      d_noise_floor = new float[d_fft_size];
+      memset(d_noise_floor, d_threshold_linear, d_fft_size * sizeof(float));
+
     }
 
     /*
@@ -115,6 +126,8 @@ namespace gr
 	volk_free(d_blackmann_harris_win[i]);
       }
       volk_free (d_ishift);
+
+      delete [] d_noise_floor;
     }
 
     int
@@ -142,7 +155,6 @@ namespace gr
       pmt::pmt_t msg;
 
       bool sig_alarm = false;
-
       // TODO: Fix the case of multiple available snapshots
       for (size_t s = 0; s < available_snapshots; s++) {
 	/**
@@ -160,7 +172,7 @@ namespace gr
 	if (s == 0) {
 	  for (size_t i = 0; i < d_fft_size; i++) {
 	    sig_slot_curr = i / d_ifft_size;
-	    if (spectrum_mag[i] > d_threshold_linear) {
+	    if (spectrum_mag[i] > (d_noise_floor[i]*d_threshold_margin_linear)) {
 	      silence_count = 0;
 	      /**
 	       * If there is silence and a peak is detected in the spectrum
@@ -172,7 +184,7 @@ namespace gr
 		sig_slot_checkpoint = sig_slot_curr;
 	      }
 	    }
-	    else if ((spectrum_mag[i] < d_threshold_linear) && sig_alarm) {
+	    else if ((spectrum_mag[i] < (d_noise_floor[i]*d_threshold_margin_linear)) && sig_alarm) {
 	      silence_count++;
 	      if (((silence_count == d_silence_guardband) || (i == d_fft_size - 1))
 		  && (sig_count < d_sig_num)) {
@@ -262,6 +274,13 @@ namespace gr
       d_msg_queue.push_back(tup);
 
       free(sig_rec.iq_samples);
+    }
+
+    void
+    signal_extractor_impl::msg_handler_noise_floor (pmt::pmt_t msg)
+    {
+      PHASMA_DEBUG("Signal extractor received estiamted noise-floor");
+      memcpy(d_noise_floor, pmt::blob_data(msg), pmt::blob_length(msg));
     }
 
   } /* namespace phasma */
