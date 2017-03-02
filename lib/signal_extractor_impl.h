@@ -22,7 +22,11 @@
 #define INCLUDED_PHASMA_SIGNAL_EXTRACTOR_IMPL_H
 
 #include <phasma/signal_extractor.h>
-#include <gnuradio/fft/fft.h>
+#include <gnuradio/filter/api.h>
+#include <gnuradio/filter/fft_filter.h>
+#include <gnuradio/filter/fft_filter_ccc.h>
+#include <gnuradio/blocks/rotator.h>
+#include <gnuradio/blocks/rotator_cc.h>
 #include <string>
 
 namespace gr
@@ -35,10 +39,12 @@ namespace gr
     private:
 
       const float d_samp_rate;
-      const float d_total_bw;
       const float d_channel_bw;
 
       const size_t d_ifft_size;
+      
+      std::vector<gr_complex> d_taps;
+      
       const size_t d_silence_guardband;
 
       size_t d_channel_num;
@@ -66,27 +72,32 @@ namespace gr
 
       std::vector<phasma_signal_t> d_signals;
 
-      gr_complex* d_ishift;
+      gr_complex* d_tmp;
 
       std::vector<float*> d_blackmann_harris_win;
       //float* d_blackmann_harris_win;
 
-      std::vector<fft::fft_complex*> d_ifft_plans;
+      //std::vector<fft::fft_complex*> d_ifft_plans;
+      std::vector<gr::filter::kernel::fft_filter_ccc*> d_filter;
+      gr::blocks::rotator d_rotator;
 
       std::vector<pmt::pmt_t> d_msg_queue;
 
       /* Vector that holds linear noise floor */
       float* d_noise_floor;
+      
+      float d_center_freq;
 
       void
       record_signal (const gr_complex* fft_in,
 		     std::vector<phasma_signal_t>* signals,
-		     size_t sig_slot_checkpoint,
-		     size_t curr_slot, std::string time);
+		     size_t sig_slot_checkpoint, size_t curr_slot,
+		     std::string time);
 
     public:
-      signal_extractor_impl (float samp_rate, float total_bw,
-			     float channel_bw, size_t ifft_size,
+      signal_extractor_impl (float samp_rate, float channel_bw,
+			     size_t ifft_size,
+			     const std::vector<gr_complex> &taps,
 			     size_t silence_guardband, float signal_duration,
 			     float threshold_db, float threshold_margin_db,
 			     size_t sig_num);

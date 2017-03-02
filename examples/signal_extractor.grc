@@ -124,7 +124,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(408, 104)</value>
+      <value>(296, 72)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -250,7 +250,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(296, 72)</value>
+      <value>(584, 24)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -399,10 +399,57 @@
     </param>
   </block>
   <block>
+    <key>variable_low_pass_filter_taps</key>
+    <param>
+      <key>beta</key>
+      <value>6.76</value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>cutoff_freq</key>
+      <value>0.4</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(600, 128)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>gain</key>
+      <value>1.0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>taps</value>
+    </param>
+    <param>
+      <key>samp_rate</key>
+      <value>1.0</value>
+    </param>
+    <param>
+      <key>width</key>
+      <value>0.495</value>
+    </param>
+    <param>
+      <key>win</key>
+      <value>firdes.WIN_HAMMING</value>
+    </param>
+  </block>
+  <block>
     <key>analog_noise_source_x</key>
     <param>
       <key>amp</key>
-      <value>0.1</value>
+      <value>0.01</value>
     </param>
     <param>
       <key>alias</key>
@@ -422,7 +469,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(504, 260)</value>
+      <value>(440, 212)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -540,7 +587,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(48, 400)</value>
+      <value>(48, 376)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -603,7 +650,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(48, 288)</value>
+      <value>(48, 272)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -658,7 +705,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(544, 384)</value>
+      <value>(544, 360)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -709,7 +756,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(760, 624)</value>
+      <value>(776, 624)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -752,7 +799,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(640, 840)</value>
+      <value>(672, 872)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -795,7 +842,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1128, 736)</value>
+      <value>(976, 680)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -830,7 +877,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(952, 580)</value>
+      <value>(1032, 548)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -877,7 +924,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(248, 400)</value>
+      <value>(248, 376)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -928,7 +975,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(824, 828)</value>
+      <value>(856, 860)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -979,7 +1026,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(632, 708)</value>
+      <value>(632, 660)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1034,7 +1081,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(56, 552)</value>
+      <value>(104, 584)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1051,61 +1098,6 @@
     <param>
       <key>num_inputs</key>
       <value>1</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>1</value>
-    </param>
-  </block>
-  <block>
-    <key>blocks_null_source</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>bus_conns</key>
-      <value>[[0,],]</value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(280, 344)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>blocks_null_source_0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>num_outputs</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
     </param>
     <param>
       <key>vlen</key>
@@ -1132,7 +1124,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(856, 356)</value>
+      <value>(880, 356)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1183,7 +1175,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(96, 836)</value>
+      <value>(128, 868)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1207,7 +1199,7 @@
     </param>
     <param>
       <key>num_items</key>
-      <value>fft_size</value>
+      <value>1024</value>
     </param>
     <param>
       <key>vlen</key>
@@ -1234,7 +1226,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(624, 396)</value>
+      <value>(640, 372)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1289,7 +1281,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1088, 580)</value>
+      <value>(1168, 548)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1340,7 +1332,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(456, 836)</value>
+      <value>(488, 868)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1466,7 +1458,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1032, 464)</value>
+      <value>(1096, 328)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1521,7 +1513,7 @@
     </param>
     <param>
       <key>fft_size</key>
-      <value>fft_size</value>
+      <value>1024</value>
     </param>
     <param>
       <key>forward</key>
@@ -1529,7 +1521,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(264, 808)</value>
+      <value>(296, 840)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2868,7 +2860,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(640, 36)</value>
+      <value>(992, 20)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3007,7 +2999,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(720, 456)</value>
+      <value>(752, 408)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3058,15 +3050,15 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>nlabels</key>
-      <value>4</value>
+      <value>2</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(840, 680)</value>
+      <value>(704, 720)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3090,7 +3082,7 @@
     </param>
     <param>
       <key>npredictors</key>
-      <value>64</value>
+      <value>512</value>
     </param>
     <param>
       <key>filename</key>
@@ -3117,11 +3109,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(240, 588)</value>
+      <value>(232, 532)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3146,10 +3138,6 @@
   </block>
   <block>
     <key>phasma_signal_extractor</key>
-    <param>
-      <key>total_bw</key>
-      <value>10e6</value>
-    </param>
     <param>
       <key>alias</key>
       <value></value>
@@ -3180,7 +3168,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(472, 484)</value>
+      <value>(464, 460)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3217,6 +3205,10 @@
     <param>
       <key>silence_guardband</key>
       <value>10</value>
+    </param>
+    <param>
+      <key>taps</key>
+      <value>taps</value>
     </param>
   </block>
   <block>
@@ -3259,15 +3251,15 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>fftsize</key>
-      <value>1024</value>
+      <value>4096</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(96, 924)</value>
+      <value>(240, 684)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -3495,7 +3487,7 @@
     </param>
     <param>
       <key>update_time</key>
-      <value>0.10</value>
+      <value>0.01</value>
     </param>
     <param>
       <key>wintype</key>
@@ -3554,7 +3546,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(936, 816)</value>
+      <value>(968, 848)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -3917,7 +3909,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(448, 696)</value>
+      <value>(464, 648)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -5428,7 +5420,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(944, 64)</value>
+      <value>(800, 56)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -5638,12 +5630,6 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>blocks_multiply_const_vxx_0_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>1</sink_key>
-  </connection>
-  <connection>
     <source_block_id>blocks_multiply_xx_0</source_block_id>
     <sink_block_id>blocks_add_xx_0_0</sink_block_id>
     <source_key>0</source_key>
@@ -5684,6 +5670,12 @@
     <sink_block_id>phasma_eigenvalue_signal_detector_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_throttle_0</source_block_id>
+    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_vector_to_stream_1</source_block_id>
@@ -5756,6 +5748,12 @@
     <sink_block_id>qtgui_freq_sink_x_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>phasma_signal_extractor_0</source_block_id>
+    <sink_block_id>blocks_message_debug_0_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>print</sink_key>
   </connection>
   <connection>
     <source_block_id>phasma_signal_extractor_0</source_block_id>

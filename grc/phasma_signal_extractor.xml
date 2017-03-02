@@ -1,94 +1,95 @@
 <?xml version="1.0"?>
 <block>
-  <name>Signal Extractor</name>
-  <key>phasma_signal_extractor</key>
-  <category>[phasma]</category>
-  <import>import phasma</import>
-  <make>phasma.signal_extractor($samp_rate, $total_bw, $channel_bw, $ifft_size, 
-  								$silence_guardband, $signal_duration, $threshold_db,
-  								$threshold_margin_db, $sig_num)</make>
-  						
-  <param>
-    <name>Sampling Rate</name>
-    <key>samp_rate</key>
-    <value>12.5e6</value>
-    <type>float</type>
-  </param>
-  
-  <param>
-    <name>Actual Bandwidth</name>
-    <key>total_bw</key>
-    <value>10e6</value>
-    <type>float</type>
-  </param>
+	<name>Signal Extractor</name>
+	<key>phasma_signal_extractor</key>
+	<category>[phasma]</category>
+	<import>import phasma</import>
+	<make>phasma.signal_extractor($samp_rate, $channel_bw, 
+		$ifft_size, $taps, $silence_guardband, $signal_duration, $threshold_db,
+		$threshold_margin_db, $sig_num)
+	</make>
 
-  <param>
-    <name>Channel Bandwidth</name>
-    <key>channel_bw</key>
-    <value>20e3</value>
-    <type>float</type>
-  </param>
-  
-  <param>
-    <name>IFFT Size</name>
-    <key>ifft_size</key>
-    <value>100</value>
-    <type>int</type>
-  </param>
-  
-  <param>
-    <name>Silence Guardband</name>
-    <key>silence_guardband</key>
-    <value>5</value>
-    <type>int</type>
-  </param>
-  
-  <param>
-    <name>Signal Duration</name>
-    <key>signal_duration</key>
-    <value>100e-3</value>
-    <type>float</type>
-  </param>
+	<param>
+		<name>Sampling Rate</name>
+		<key>samp_rate</key>
+		<value>12.5e6</value>
+		<type>float</type>
+	</param>
 
-  <param>
-    <name>Energy Threshold (dB)</name>
-    <key>threshold_db</key>
-    <value>-100</value>
-    <type>float</type>
-  </param>
-  
-  <param>
-    <name>Energy Threshold Margin (dB)</name>
-    <key>threshold_margin_db</key>
-    <value>5</value>
-    <type>float</type>
-  </param>
+	<param>
+		<name>Channel Bandwidth</name>
+		<key>channel_bw</key>
+		<value>20e3</value>
+		<type>float</type>
+	</param>
 
-  <param>
-    <name>Number of Signals</name>
-    <key>sig_num</key>
-    <value>10</value>
-    <type>int</type>
-  </param>
-  
-  <sink>
-    <name>in</name>
-    <type>float</type>
-  </sink>
-  
-  <sink>
-    <name>in</name>
-    <type>complex</type>
-  </sink>
+	<param>
+		<name>IFFT Size</name>
+		<key>ifft_size</key>
+		<value>100</value>
+		<type>int</type>
+	</param>
 
-  <sink>
-    <name>threshold_rcv</name>
-    <type>message</type>
-    <optional>1</optional>
-  </sink>
+	<param>
+		<name>Taps</name>
+		<key>taps</key>
+		<value>()</value>
+		<type>raw</type>
+	</param>	
 
-  <source>
-    <name>out</name>
-    <type>message</type>
-  </source>
+	<param>
+		<name>Silence Guardband</name>
+		<key>silence_guardband</key>
+		<value>5</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Signal Duration</name>
+		<key>signal_duration</key>
+		<value>100e-3</value>
+		<type>float</type>
+	</param>
+
+	<param>
+		<name>Energy Threshold (dB)</name>
+		<key>threshold_db</key>
+		<value>-100</value>
+		<type>float</type>
+	</param>
+
+	<param>
+		<name>Energy Threshold Margin (dB)</name>
+		<key>threshold_margin_db</key>
+		<value>5</value>
+		<type>float</type>
+	</param>
+
+	<param>
+		<name>Number of Signals</name>
+		<key>sig_num</key>
+		<value>10</value>
+		<type>int</type>
+	</param>
+
+	<sink>
+		<name>in</name>
+		<type>float</type>
+	</sink>
+
+	<sink>
+		<name>in</name>
+		<type>complex</type>
+	</sink>
+
+	<sink>
+		<name>threshold_rcv</name>
+		<type>message</type>
+		<optional>1</optional>
+	</sink>
+
+	<source>
+		<name>out</name>
+		<type>message</type>
+	</source>
 </block>
