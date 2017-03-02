@@ -109,27 +109,26 @@ opencv_predict_impl::msg_handler_trigger() {
 			// Access the message queue
 			msg = delete_head_blocking(pmt::mp("in"));
 			tuple = pmt::vector_ref(msg, curr_sig);
-			std::cout<< pmt::tuple_ref(tuple, 0) << std::endl;
-			/* TODO: Handle complex */
 			switch (d_data_type) {
 			case COMPLEX:
 				data = (gr_complex *)pmt::blob_data(pmt::tuple_ref(tuple, 1));
 				available_samples = pmt::blob_length(pmt::tuple_ref(tuple, 1))/sizeof(gr_complex);
-				volk_32fc_deinterleave_32f_x2_a(d_input_re, d_input_imag, (gr_complex *)data,
-						available_samples);
-				
+				std::cout << "Bytes: " << pmt::blob_length(pmt::tuple_ref(tuple, 1)) << std::endl;
+				std::cout << "Samples: " << available_samples << std::endl;
+				volk_32fc_deinterleave_32f_x2(d_input_re, d_input_imag, (gr_complex *)data,
+						available_samples-1);
 				// Finally we handle floats
 				available_samples = available_samples * 2;
 				
 				// Convert iq samples into a interleaved vector
 				for(size_t s=0; s<available_samples-1; s++) {
 					d_input[s] = d_input_re[s];
-					d_input[s+1] = d_input_re[s];
+					d_input[s+1] = d_input_imag[s];
 				}
 				break;
 			case FLOAT:
 				data = (float *)pmt::blob_data(pmt::tuple_ref(tuple, 1));
-				available_samples = pmt::blob_length(pmt::tuple_ref(tuple, 1))/sizeof(float);;
+				available_samples = pmt::blob_length(pmt::tuple_ref(tuple, 1))/sizeof(float);
 				memcpy(d_input, data, pmt::blob_length(pmt::tuple_ref(tuple, 1)));
 				break;
 			}
@@ -152,15 +151,17 @@ opencv_predict_impl::msg_handler_trigger() {
 				cv::Mat predict_labels;
 				switch (d_classifier_type) {
 				case RANDOM_FOREST: {
-					predictions.push_back(
-							reinterpret_cast<cv::Ptr<cv::ml::RTrees>&>(d_model)->predict(
-									d_data->getSamples(), predict_labels));
+				    predictions.push_back(reinterpret_cast<cv::Ptr<cv::ml::RTrees>&>(d_model)->predict(
+					d_data->getSamples(), predict_labels));
 					break;
 				}
 				default: {
 					break;
 				}
 				}
+			}
+			for (size_t j=0; j<predictions.size(); j++){
+			  std::cout << "Hey! Pred: " << predictions[j] << std::endl;
 			}
 			pmt::pmt_t pmt_msg = pmt::make_dict();
 			pmt_msg = pmt::dict_add(pmt_msg, pmt::string_to_symbol("Predicted"),
@@ -171,7 +172,6 @@ opencv_predict_impl::msg_handler_trigger() {
 			curr_sig++;
 		} catch (pmt::out_of_range&) {
 			/* You are out of range so break */
-			std::cout<< "Out of range" << std::endl;
 			curr_sig = 0;
 		}
 	}
@@ -183,7 +183,7 @@ opencv_predict_impl::get_most_freq_decision(std::vector<float>* predictions){
 	size_t tmp = 0;
 	float max_idx = 0;
 	
-	for (size_t i=0; i<d_nlabels; i++) {
+	for (size_t i=0; i<=d_nlabels; i++) {
 		tmp = std::count(predictions->begin(), predictions->end(), i);
 		if (tmp > max) {
 			max = tmp;

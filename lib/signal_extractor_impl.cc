@@ -112,8 +112,9 @@ namespace gr
       }
 
       d_noise_floor = new float[d_fft_size];
-      memset(d_noise_floor, d_threshold_linear, d_fft_size * sizeof(float));
-
+      for (size_t i = 0; i < d_fft_size; i++) {
+	d_noise_floor[i] = d_threshold_linear;
+      }
     }
 
     /*
@@ -279,7 +280,7 @@ namespace gr
     void
     signal_extractor_impl::msg_handler_noise_floor (pmt::pmt_t msg)
     {
-      PHASMA_DEBUG("Signal extractor received estiamted noise-floor");
+      PHASMA_LOG_INFO("Signal extractor received estiamted noise-floor");
       memcpy(d_noise_floor, pmt::blob_data(msg), pmt::blob_length(msg));
     }
 
