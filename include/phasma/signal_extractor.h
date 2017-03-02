@@ -18,15 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-
 #ifndef INCLUDED_PHASMA_SIGNAL_EXTRACTOR_H
 #define INCLUDED_PHASMA_SIGNAL_EXTRACTOR_H
 
 #include <phasma/api.h>
 #include <gnuradio/sync_block.h>
 
-namespace gr {
-  namespace phasma {
+namespace gr
+{
+  namespace phasma
+  {
 
     /*!
      * \brief <+description of block+>
@@ -35,7 +36,7 @@ namespace gr {
      */
     class PHASMA_API signal_extractor : virtual public gr::sync_block
     {
-     public:
+    public:
       typedef boost::shared_ptr<signal_extractor> sptr;
 
       /*!
@@ -46,10 +47,11 @@ namespace gr {
        * class. phasma::signal_extractor::make is the public interface for
        * creating new instances.
        */
-      static sptr make(float samp_rate, float total_bw, float channel_bw,
-		       size_t ifft_size, size_t silence_guardband,
-		       float signal_duration, float threshold_db,
-		       float threshold_margin_db, size_t sig_num);
+      static sptr
+      make (float samp_rate, float channel_bw, size_t ifft_size,
+	    const std::vector<gr_complex> &taps, size_t silence_guardband,
+	    float signal_duration, float threshold_db,
+	    float threshold_margin_db, size_t sig_num);
     };
 
   } // namespace phasma
