@@ -105,7 +105,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>512</value>
+      <value>1024</value>
     </param>
   </block>
   <block>
@@ -133,6 +133,116 @@
     <param>
       <key>value</key>
       <value>1e6</value>
+    </param>
+  </block>
+  <block>
+    <key>analog_noise_source_x</key>
+    <param>
+      <key>amp</key>
+      <value>0.1</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(368, 284)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>analog_noise_source_x_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>noise_type</key>
+      <value>analog.GR_GAUSSIAN</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>seed</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>analog_noise_source_x</key>
+    <param>
+      <key>amp</key>
+      <value>0.1</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(384, 116)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>analog_noise_source_x_0_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>noise_type</key>
+      <value>analog.GR_GAUSSIAN</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>seed</key>
+      <value>0</value>
     </param>
   </block>
   <block>
@@ -372,6 +482,108 @@
     </param>
   </block>
   <block>
+    <key>blocks_add_xx</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(552, 328)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_add_xx_0_0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>num_inputs</key>
+      <value>2</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_add_xx</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(568, 160)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_add_xx_0_0_0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>num_inputs</key>
+      <value>2</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
     <key>blocks_complex_to_float</key>
     <param>
       <key>alias</key>
@@ -391,7 +603,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(440, 240)</value>
+      <value>(648, 240)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -434,7 +646,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(440, 344)</value>
+      <value>(648, 344)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -477,7 +689,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(448, 432)</value>
+      <value>(656, 432)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -520,7 +732,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(432, 528)</value>
+      <value>(640, 528)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -567,7 +779,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(624, 240)</value>
+      <value>(832, 240)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -622,7 +834,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(624, 344)</value>
+      <value>(832, 344)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -677,7 +889,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(624, 432)</value>
+      <value>(832, 432)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -732,7 +944,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(624, 512)</value>
+      <value>(832, 512)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -933,7 +1145,7 @@
     </param>
     <param>
       <key>samples_per_symbol</key>
-      <value>4</value>
+      <value>64</value>
     </param>
     <param>
       <key>verbose</key>
@@ -1000,7 +1212,7 @@
     </param>
     <param>
       <key>samples_per_symbol</key>
-      <value>4</value>
+      <value>64</value>
     </param>
     <param>
       <key>verbose</key>
@@ -1011,7 +1223,7 @@
     <key>phasma_rforest_model</key>
     <param>
       <key>active_var_count</key>
-      <value>0</value>
+      <value>64</value>
     </param>
     <param>
       <key>alias</key>
@@ -1043,7 +1255,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(904, 328)</value>
+      <value>(1048, 296)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1059,11 +1271,11 @@
     </param>
     <param>
       <key>labels</key>
-      <value>(0,1,2,3)</value>
+      <value>(1,2,3,4)</value>
     </param>
     <param>
       <key>max_categories</key>
-      <value>16</value>
+      <value>10</value>
     </param>
     <param>
       <key>max_depth</key>
@@ -1075,11 +1287,11 @@
     </param>
     <param>
       <key>min_sample_count</key>
-      <value>2</value>
+      <value>16</value>
     </param>
     <param>
       <key>npredictors</key>
-      <value>fft_size</value>
+      <value>4096</value>
     </param>
     <param>
       <key>regression_accu</key>
@@ -1090,6 +1302,18 @@
       <value>False</value>
     </param>
   </block>
+  <connection>
+    <source_block_id>analog_noise_source_x_0</source_block_id>
+    <sink_block_id>blocks_add_xx_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>analog_noise_source_x_0_0</source_block_id>
+    <sink_block_id>blocks_add_xx_0_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
   <connection>
     <source_block_id>analog_random_source_x_0_0</source_block_id>
     <sink_block_id>digital_psk_mod_0_0</sink_block_id>
@@ -1111,6 +1335,18 @@
   <connection>
     <source_block_id>analog_random_source_x_0_0_1</source_block_id>
     <sink_block_id>digital_psk_mod_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_add_xx_0_0</source_block_id>
+    <sink_block_id>blocks_complex_to_float_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_add_xx_0_0_0</source_block_id>
+    <sink_block_id>blocks_complex_to_float_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -1200,14 +1436,14 @@
   </connection>
   <connection>
     <source_block_id>digital_psk_mod_0</source_block_id>
-    <sink_block_id>blocks_complex_to_float_0</sink_block_id>
+    <sink_block_id>blocks_add_xx_0_0_0</sink_block_id>
     <source_key>0</source_key>
-    <sink_key>0</sink_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>digital_psk_mod_0_0</source_block_id>
-    <sink_block_id>blocks_complex_to_float_0_0</sink_block_id>
+    <sink_block_id>blocks_add_xx_0_0</sink_block_id>
     <source_key>0</source_key>
-    <sink_key>0</sink_key>
+    <sink_key>1</sink_key>
   </connection>
 </flow_graph>

@@ -66,10 +66,10 @@ namespace gr
 	    d_pfa (pfa),
 	    d_fft_size (fft_size),
 	    d_sampling_rate (sampling_rate),
-	    d_bw (actual_bw * pow (actual_bw, 6)),
+	    d_bw (actual_bw),
 	    d_num_samps_to_discard (
 		ceil (
-		    (d_fft_size - (d_bw * (float) d_fft_size / d_sampling_rate))
+		    (d_fft_size - ((d_bw * (float) d_fft_size) / d_sampling_rate))
 			/ 2)),
 	    d_num_samps_per_side ((d_fft_size / 2) - d_num_samps_to_discard),
 	    d_subcarriers_num (2 * d_num_samps_per_side),
@@ -79,6 +79,7 @@ namespace gr
 	    d_status(true)
 
     {
+      std::cout << fft_size << std::endl;
       /* Process in a per-FFT basis */
       set_output_multiple (d_fft_size);
 
@@ -102,9 +103,12 @@ namespace gr
 	    + 0.14128 * cos ((4 * M_PI * i) / (d_fft_size - 1))
 	    - 0.01168 * cos ((6 * M_PI * i) / (d_fft_size - 1));
       }
+
       d_psd = (float*) volk_malloc (d_fft_size * sizeof(float), 32);
       d_noise_floor = (float*) volk_malloc (d_fft_size * sizeof(float), 32);
-      memset (d_noise_floor, 0, d_fft_size);
+      for (size_t i = 0; i < d_fft_size; i++) {
+	d_noise_floor[i] = -200;
+      }
 
     }
 
@@ -237,9 +241,9 @@ namespace gr
 
       d_noise_floor_est_cnt--;
 
-      /* Apply window, check if need unaligned version */
-      volk_32fc_32f_multiply_32fc (&d_fft->get_inbuf ()[0], in,
-				   &d_blackmann_harris_win[0], d_fft_size);
+      /* FIX: Decide whether to apply window, check if need unaligned version */
+
+      memcpy(&d_fft->get_inbuf ()[0], in, d_fft_size*sizeof(gr_complex));
       d_fft->execute ();
 
       /* De-normalize with the size of wide FFT */
