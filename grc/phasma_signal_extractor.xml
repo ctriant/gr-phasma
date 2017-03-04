@@ -33,7 +33,8 @@
 	<param>
 		<name>Taps</name>
 		<key>taps</key>
-		<type>complex_vector</type>
+		<value>()</value>
+		<type>raw</type>
 	</param>	
 
 	<param>
