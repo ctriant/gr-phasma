@@ -120,7 +120,7 @@ namespace gr
 	    new fft_filter_ccc (d_channel_num / (i + 1), d_taps, 1));
       }
 
-      d_rotator.set_phase_incr (exp (gr_complex (0, 0.0)));
+      d_rotator.set_phase_incr (gr_complex (0, 0));
 
       d_noise_floor = new float[d_fft_size];
       for (size_t i = 0; i < d_fft_size; i++) {
@@ -257,7 +257,7 @@ namespace gr
       size_t span;
       size_t iq_size_bytes;
       float phase_inc;
-      std::vector<gr_complex> taps_new;
+      std::vector<gr_complex> taps_new(d_taps.size());
 
       ifft_idx = curr_slot - sig_slot_checkpoint;
       span = curr_slot - sig_slot_checkpoint + 1;
@@ -270,22 +270,23 @@ namespace gr
       /* TODO: Mind the case of multiple available snapshots */
       const gr_complex* sig_ptr = &in[sig_slot_checkpoint * d_ifft_size];
 
-      d_center_freq = ((((d_abs_signal_end * d_channel_bw) / d_ifft_size)
-	  - ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
-	  - d_samp_rate / 2;
+//      d_center_freq = ((((d_abs_signal_end * d_channel_bw) / d_ifft_size)
+//	  + ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
+//	  - (d_samp_rate / 2);
+
+      d_center_freq = ((curr_slot * d_channel_bw
+	  + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2);
+
       phase_inc = (2.0 * M_PI * d_center_freq) / d_samp_rate;
       for (size_t t = 0; t < d_taps.size (); t++) {
-	taps_new.push_back (
-	    d_taps[t] * std::exp (gr_complex (0, t * phase_inc)));
+	taps_new[t] = d_taps[t] * std::exp (gr_complex (0, t * phase_inc));
       }
-
-      d_rotator.set_phase_incr (
-	  std::exp (gr_complex (0, -1 * (d_channel_num / span) * phase_inc)));
+      d_rotator.set_phase_incr (exp(gr_complex(0, -1 * (d_channel_num / span) * phase_inc)));
 
       d_filter[ifft_idx]->set_taps (taps_new);
-      d_filter[ifft_idx]->filter (d_ifft_size * span, sig_ptr, d_tmp);
-      memcpy (sig_rec.iq_samples, d_tmp, iq_size_bytes);
-//      d_rotator.rotateN(sig_rec.iq_samples, d_tmp, d_ifft_size * span);
+      d_rotator.rotateN (d_tmp, in, d_fft_size);
+      d_filter[ifft_idx]->filter (d_ifft_size*span, d_tmp, sig_rec.iq_samples);
+
 
       d_signals.push_back (sig_rec);
 
@@ -294,12 +295,23 @@ namespace gr
 			  d_abs_signal_end - d_abs_signal_start,
 			  sig_slot_checkpoint * d_channel_bw,
 			  curr_slot * d_channel_bw, "");
-//      pmt_t tup = make_tuple (string_to_symbol (meta.toJSON ()),
-//			      make_blob (sig_rec.iq_samples, iq_size_bytes));
-      pmt_t tup = make_tuple (string_to_symbol (meta.toJSON ()));
+      pmt_t tup;
+//      if ((d_channel_num / span) > 26) {
+//	tup = make_tuple (string_to_symbol (meta.toJSON ()));
+//      }
+//      else {
+//        tup = make_tuple (string_to_symbol (meta.toJSON ()),
+//			  make_blob (sig_rec.iq_samples, iq_size_bytes));
+//        std::cout << "Center: " << d_center_freq << std::endl;
+//      }
+      tup = make_tuple (string_to_symbol (meta.toJSON ()),
+      			  make_blob (sig_rec.iq_samples, iq_size_bytes));
+      std::cout << "Center: " << d_center_freq << std::endl;
       d_msg_queue.push_back (tup);
 
+      taps_new.clear();
       free (sig_rec.iq_samples);
+
     }
 
     void

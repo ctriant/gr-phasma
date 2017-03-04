@@ -27,9 +27,10 @@ sigMF::sigMF (std::string datatype, std::string datapath, std::string version,
 }
 
 sigMF::sigMF (std::string datatype, std::string datapath, std::string version,
-	 size_t capture_sample_start, double sample_rate, std::string time,
-	 size_t annotation_sample_start, size_t sample_count, double freq_lower_edge,
-	 double freq_upper_edge, std::string comment)
+	      size_t capture_sample_start, double sample_rate, std::string time,
+	      size_t annotation_sample_start, size_t sample_count,
+	      double freq_lower_edge, double freq_upper_edge,
+	      std::string comment)
 {
   d_datatype = datatype;
   d_datapath = datapath;
@@ -281,7 +282,7 @@ sigMF::toJSON ()
   Json::Value root;
   Json::Value global;
   Json::Value capture;
-  Json::Value capture_list(Json::arrayValue);
+  Json::Value capture_list (Json::arrayValue);
   Json::Value annotation;
 
   global["core:datapath"] = d_datapath;
@@ -291,20 +292,20 @@ sigMF::toJSON ()
   capture["core:sample_rate"] = d_sample_rate;
   capture["core:time"] = d_time;
 
-  capture_list.append(capture);
+  capture_list.append (capture);
 
   annotation["core:sample_start"] = d_annotation_samples_start;
   annotation["core:sample_count"] = d_sample_count;
   annotation["core:freq_lower_edge"] = d_freq_lower_edge;
   annotation["core:freq_upper_edge"] = d_freq_upper_edge;
   annotation["core:comment"] = d_comment;
-  annotation["span"] = (d_freq_upper_edge/20e3) - (d_freq_lower_edge/20e3) + 1;
+  annotation["span"] = d_freq_upper_edge - d_freq_lower_edge + 20e3;
 
   root["global"] = global;
   root["capture"] = capture_list;
   root["annotation"] = annotation;
 
-  std::string json = root.toStyledString();
+  std::string json = root.toStyledString ();
 
   return json;
 }
