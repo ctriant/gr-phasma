@@ -42,20 +42,22 @@ namespace gr
       const float d_channel_bw;
 
       const size_t d_ifft_size;
-      
+
       std::vector<gr_complex> d_taps;
-      
-      const size_t d_silence_guardband;
+
+      const float d_silence_guardband;
+      size_t d_silence_guardband_samples;
 
       size_t d_channel_num;
       size_t d_fft_size;
 
       const float d_signal_duration;
+      float d_min_sig_samps;
       size_t d_snapshots_required;
 
       const float d_threshold_db;
       const float d_threshold_margin_db;
-      const float d_threshold_margin_linear;
+      const float d_thresh_marg_lin;
       const float d_threshold_linear;
       const size_t d_sig_num;
       const size_t d_conseq_channel_num;
@@ -75,9 +77,7 @@ namespace gr
       gr_complex* d_tmp;
 
       std::vector<float*> d_blackmann_harris_win;
-      //float* d_blackmann_harris_win;
 
-      //std::vector<fft::fft_complex*> d_ifft_plans;
       std::vector<gr::filter::kernel::fft_filter_ccc*> d_filter;
       gr::blocks::rotator d_rotator;
 
@@ -85,7 +85,7 @@ namespace gr
 
       /* Vector that holds linear noise floor */
       float* d_noise_floor;
-      
+
       float d_center_freq;
 
       void
@@ -98,9 +98,11 @@ namespace gr
       signal_extractor_impl (float samp_rate, float channel_bw,
 			     size_t ifft_size,
 			     const std::vector<gr_complex> &taps,
-			     size_t silence_guardband, float signal_duration,
-			     float threshold_db, float threshold_margin_db,
-			     size_t sig_num);
+			     const float silence_guardband,
+			     float signal_duration,
+			     float min_sig_bw,
+			     float threshold_db,
+			     float threshold_margin_db, size_t sig_num);
 
       ~signal_extractor_impl ();
 

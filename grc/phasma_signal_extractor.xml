@@ -5,8 +5,8 @@
 	<category>[phasma]</category>
 	<import>import phasma</import>
 	<make>phasma.signal_extractor($samp_rate, $channel_bw, 
-		$ifft_size, $taps, $silence_guardband, $signal_duration, $threshold_db,
-		$threshold_margin_db, $sig_num)
+		$ifft_size, $taps, $silence_guardband, $signal_duration, $min_sig_bw,
+		$threshold_db, $threshold_margin_db, $sig_num)
 	</make>
 
 	<param>
@@ -33,21 +33,27 @@
 	<param>
 		<name>Taps</name>
 		<key>taps</key>
-		<value>()</value>
-		<type>raw</type>
+		<type>complex_vector</type>
 	</param>	
 
 	<param>
-		<name>Silence Guardband</name>
+		<name>Silence Guardband (kHz)</name>
 		<key>silence_guardband</key>
-		<value>5</value>
-		<type>int</type>
+		<value>1e3</value>
+		<type>float</type>
 	</param>
 
 	<param>
 		<name>Signal Duration</name>
 		<key>signal_duration</key>
 		<value>100e-3</value>
+		<type>float</type>
+	</param>
+	
+	<param>
+		<name>Minimum Bandwidth</name>
+		<key>min_sig_bw</key>
+		<value>3e3</value>
 		<type>float</type>
 	</param>
 
