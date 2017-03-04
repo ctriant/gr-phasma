@@ -34,32 +34,33 @@ namespace gr
   namespace phasma
   {
 
+    using namespace gr::filter::kernel;
+    using namespace boost::posix_time;
+    using namespace pmt;
+
     signal_extractor::sptr
     signal_extractor::make (float samp_rate, float channel_bw, size_t ifft_size,
 			    const std::vector<gr_complex> &taps,
-			    size_t silence_guardband, float signal_duration,
+			    const float silence_guardband,
+			    float signal_duration, float min_sig_bw,
 			    float threshold_db, float threshold_margin_db,
 			    size_t sig_num)
     {
       return gnuradio::get_initial_sptr (
 	  new signal_extractor_impl (samp_rate, channel_bw, ifft_size, taps,
 				     silence_guardband, signal_duration,
-				     threshold_db, threshold_margin_db,
-				     sig_num));
+				     min_sig_bw, threshold_db,
+				     threshold_margin_db, sig_num));
     }
 
     /*
      * The private constructor
      */
-    signal_extractor_impl::signal_extractor_impl (float samp_rate,
-						  float channel_bw,
-						  size_t ifft_size,
-						  const std::vector<gr_complex> &taps,
-						  size_t silence_guardband,
-						  float signal_duration,
-						  float threshold_db,
-						  float threshold_margin_db,
-						  size_t sig_num) :
+    signal_extractor_impl::signal_extractor_impl (
+	float samp_rate, float channel_bw, size_t ifft_size,
+	const std::vector<gr_complex> &taps, const float silence_guardband,
+	float signal_duration, float min_sig_bw, float threshold_db,
+	float threshold_margin_db, size_t sig_num) :
 	    gr::sync_block (
 		"signal_extractor",
 		gr::io_signature::make2 (2, 2, sizeof(float),
@@ -69,15 +70,17 @@ namespace gr
 	    d_channel_bw (channel_bw),
 	    d_ifft_size (ifft_size),
 	    d_silence_guardband (silence_guardband),
+	    d_silence_guardband_samples (
+		ceil ((d_ifft_size * d_silence_guardband) / d_channel_bw)),
 	    d_channel_num (d_samp_rate / d_channel_bw),
 	    d_fft_size ((d_samp_rate * d_ifft_size) / d_channel_bw),
 	    d_signal_duration (signal_duration),
+	    d_min_sig_samps (ceil ((d_ifft_size * min_sig_bw) / d_channel_bw)),
 	    d_snapshots_required (1),
 	    d_threshold_db (threshold_db),
 	    d_threshold_margin_db (threshold_margin_db),
-	    d_threshold_margin_linear (
-		std::pow (10, d_threshold_margin_db / 10)),
-	    d_threshold_linear (std::pow (10, d_threshold_db / 10)),
+	    d_thresh_marg_lin (pow (10, d_threshold_margin_db / 10)),
+	    d_threshold_linear (pow (10, d_threshold_db / 10)),
 	    d_sig_num (sig_num),
 	    d_conseq_channel_num (250),
 	    d_abs_signal_start (0),
@@ -86,14 +89,14 @@ namespace gr
       /* Process in a per-FFT basis */
       set_output_multiple (d_fft_size);
 
-      message_port_register_in (pmt::mp ("threshold_rcv"));
+      message_port_register_in (mp ("threshold_rcv"));
       set_msg_handler (
-	  pmt::mp ("threshold_rcv"),
+	  mp ("threshold_rcv"),
 	  boost::bind (&signal_extractor_impl::msg_handler_noise_floor, this,
 		       _1));
 
-      message_port_register_out (pmt::mp ("out"));
-      
+      message_port_register_out (mp ("out"));
+
       d_taps = taps;
 
       d_tmp = (gr_complex*) volk_malloc (
@@ -110,17 +113,15 @@ namespace gr
 	      - 0.01168 * cos ((6 * M_PI * i) / (d_fft_size - 1));
 	}
       }
-      
+
       /* Allocate memory for possible useful IFFT plans*/
       for (size_t i = 0; i < d_conseq_channel_num; i++) {
-//	d_ifft_plans.push_back (
-//	    new fft::fft_complex ((i + 1) * d_ifft_size, false, 1));
-	d_filter.push_back (new gr::filter::kernel::fft_filter_ccc (
-	    d_channel_num / (i + 1), d_taps, 1));
+	d_filter.push_back (
+	    new fft_filter_ccc (d_channel_num / (i + 1), d_taps, 1));
       }
-      
-      d_rotator.set_phase_incr(exp(gr_complex(0, 0.0)));
-      
+
+      d_rotator.set_phase_incr (exp (gr_complex (0, 0.0)));
+
       d_noise_floor = new float[d_fft_size];
       for (size_t i = 0; i < d_fft_size; i++) {
 	d_noise_floor[i] = d_threshold_linear;
@@ -133,10 +134,10 @@ namespace gr
     signal_extractor_impl::~signal_extractor_impl ()
     {
       for (size_t i = 0; i < d_conseq_channel_num; i++) {
-//	delete d_ifft_plans[i];
 	delete d_filter[i];
 	volk_free (d_blackmann_harris_win[i]);
       }
+
       volk_free (d_tmp);
 
       delete[] d_noise_floor;
@@ -147,10 +148,9 @@ namespace gr
 				 gr_vector_const_void_star &input_items,
 				 gr_vector_void_star &output_items)
     {
-
-      boost::posix_time::ptime current_date_microseconds;
-      long milliseconds;
-      boost::posix_time::time_duration current_time_milliseconds;
+      ptime curr_microsecs;
+      long millisecs;
+      time_duration current_time_milliseconds;
       const float *spectrum_mag = (const float *) input_items[0];
       const gr_complex *in = (const gr_complex *) input_items[1];
 
@@ -163,7 +163,7 @@ namespace gr
       size_t start_idx;
       size_t end_idx;
 
-      pmt::pmt_t msg;
+      pmt_t msg;
 
       bool sig_alarm = false;
       // TODO: Fix the case of multiple available snapshots
@@ -182,9 +182,10 @@ namespace gr
 
 	if (s == 0) {
 	  for (size_t i = 0; i < d_fft_size; i++) {
+
 	    sig_slot_curr = i / d_ifft_size;
-	    if (spectrum_mag[i]
-		> (d_noise_floor[i] * d_threshold_margin_linear)) {
+
+	    if (spectrum_mag[i] > (d_noise_floor[i] * d_thresh_marg_lin)) {
 	      silence_count = 0;
 	      /**
 	       * If there is silence and a peak is detected in the spectrum
@@ -196,33 +197,26 @@ namespace gr
 		sig_slot_checkpoint = sig_slot_curr;
 	      }
 	    }
-	    else if ((spectrum_mag[i]
-		< (d_noise_floor[i] * d_threshold_margin_linear))
+
+	    else if ((spectrum_mag[i] < d_noise_floor[i] * d_thresh_marg_lin)
 		&& sig_alarm) {
 	      silence_count++;
-	      if (((silence_count == d_silence_guardband)
+	      if (((silence_count == d_silence_guardband_samples)
 		  || (i == d_fft_size - 1)) && (sig_count < d_sig_num)) {
-		// Full -legal span- signal observed
-		current_date_microseconds =
-		    boost::posix_time::microsec_clock::local_time ();
-		milliseconds =
-		    current_date_microseconds.time_of_day ().total_milliseconds ();
-		current_time_milliseconds = boost::posix_time::milliseconds (
-		    milliseconds);
-		boost::posix_time::ptime current_date_milliseconds (
-		    current_date_microseconds.date (),
-		    current_time_milliseconds);
+		curr_microsecs = microsec_clock::local_time ();
+		millisecs = curr_microsecs.time_of_day ().total_milliseconds ();
+		current_time_milliseconds = milliseconds (millisecs);
+		ptime curr_milliseconds (curr_microsecs.date (),
+					 current_time_milliseconds);
 		d_abs_signal_end = i - silence_count + 1;
 		sig_slot_curr = d_abs_signal_end / d_ifft_size;
-		record_signal (
-		    in,
-		    &d_signals,
-		    sig_slot_checkpoint,
-		    sig_slot_curr,
-		    boost::posix_time::to_iso_extended_string (
-			current_date_milliseconds));
+		if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps) {
+		  record_signal (in, &d_signals, sig_slot_checkpoint,
+		  			       sig_slot_curr,
+		  			       to_iso_extended_string (curr_milliseconds));
+		  sig_count++;
+		}
 		sig_alarm = false;
-		sig_count++;
 		silence_count = 0;
 	      }
 	    }
@@ -235,12 +229,13 @@ namespace gr
 	else {
 	  // TODO: What about timestamp when more than one snapshot available?
 	}
+
 	if (sig_count > 0) {
-	  msg = pmt::make_vector (sig_count, pmt::PMT_NIL);
+	  msg = make_vector (sig_count, PMT_NIL);
 	  for (size_t c = 0; c < sig_count; c++) {
 	    pmt::vector_set (msg, c, d_msg_queue[c]);
 	  }
-	  message_port_pub (pmt::mp ("out"), msg);
+	  message_port_pub (mp ("out"), msg);
 	  sig_count = 0;
 	}
 	d_signals.clear ();
@@ -262,48 +257,56 @@ namespace gr
       size_t span;
       size_t iq_size_bytes;
       float phase_inc;
-      
+      std::vector<gr_complex> taps_new;
+
       ifft_idx = curr_slot - sig_slot_checkpoint;
       span = curr_slot - sig_slot_checkpoint + 1;
-      iq_size_bytes = span * d_ifft_size * d_snapshots_required * sizeof(gr_complex);
-      
+      iq_size_bytes = span * d_ifft_size * sizeof(gr_complex);
+
       sig_rec.start_slot_idx = sig_slot_checkpoint;
       sig_rec.end_slot_idx = curr_slot;
       sig_rec.iq_samples = (gr_complex*) malloc (iq_size_bytes);
-      
+
       /* TODO: Mind the case of multiple available snapshots */
       const gr_complex* sig_ptr = &in[sig_slot_checkpoint * d_ifft_size];
-      
-      d_center_freq = (span*d_channel_bw)/2;
+
+      d_center_freq = ((((d_abs_signal_end * d_channel_bw) / d_ifft_size)
+	  - ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
+	  - d_samp_rate / 2;
       phase_inc = (2.0 * M_PI * d_center_freq) / d_samp_rate;
-      for (size_t t=0; t<d_taps.size(); t++) {
-	d_taps[t] = d_taps[t]*std::exp(t * phase_inc * gr_complex(0,1));
+      for (size_t t = 0; t < d_taps.size (); t++) {
+	taps_new.push_back (
+	    d_taps[t] * std::exp (gr_complex (0, t * phase_inc)));
       }
-      d_rotator.set_phase_incr(-1 * (d_channel_num / span) * phase_inc);
-      
-      d_filter[ifft_idx]->set_taps(d_taps);
-      d_filter[ifft_idx]->filter(d_ifft_size * span, in, d_tmp);
-      d_rotator.rotateN(sig_rec.iq_samples, d_tmp, d_ifft_size * span);
+
+      d_rotator.set_phase_incr (
+	  std::exp (gr_complex (0, -1 * (d_channel_num / span) * phase_inc)));
+
+      d_filter[ifft_idx]->set_taps (taps_new);
+      d_filter[ifft_idx]->filter (d_ifft_size * span, sig_ptr, d_tmp);
+      memcpy (sig_rec.iq_samples, d_tmp, iq_size_bytes);
+//      d_rotator.rotateN(sig_rec.iq_samples, d_tmp, d_ifft_size * span);
 
       d_signals.push_back (sig_rec);
+
       sigMF meta = sigMF ("cf32", "./", "0.0.1", 0, d_samp_rate, timestamp,
 			  d_abs_signal_start,
 			  d_abs_signal_end - d_abs_signal_start,
 			  sig_slot_checkpoint * d_channel_bw,
 			  curr_slot * d_channel_bw, "");
-      pmt::pmt_t tup = pmt::make_tuple (
-	  pmt::string_to_symbol (meta.toJSON ()),
-	  pmt::make_blob (sig_rec.iq_samples, iq_size_bytes));
+//      pmt_t tup = make_tuple (string_to_symbol (meta.toJSON ()),
+//			      make_blob (sig_rec.iq_samples, iq_size_bytes));
+      pmt_t tup = make_tuple (string_to_symbol (meta.toJSON ()));
       d_msg_queue.push_back (tup);
 
       free (sig_rec.iq_samples);
     }
 
     void
-    signal_extractor_impl::msg_handler_noise_floor (pmt::pmt_t msg)
+    signal_extractor_impl::msg_handler_noise_floor (pmt_t msg)
     {
-      PHASMA_LOG_INFO("Signal extractor received estiamted noise-floor");
-      memcpy (d_noise_floor, pmt::blob_data (msg), pmt::blob_length (msg));
+      PHASMA_LOG_INFO("Signal extractor received estimated noise-floor");
+      memcpy (d_noise_floor, blob_data (msg), blob_length (msg));
     }
 
   } /* namespace phasma */

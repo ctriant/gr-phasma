@@ -49,8 +49,8 @@ namespace gr
        */
       static sptr
       make (float samp_rate, float channel_bw, size_t ifft_size,
-	    const std::vector<gr_complex> &taps, size_t silence_guardband,
-	    float signal_duration, float threshold_db,
+	    const std::vector<gr_complex> &taps, const float silence_guardband,
+	    float signal_duration, float min_sig_bw, float threshold_db,
 	    float threshold_margin_db, size_t sig_num);
     };
 
