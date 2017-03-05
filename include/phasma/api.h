@@ -36,16 +36,22 @@ typedef enum
   RANDOM_FOREST,
 } opencv_ml_classifier_type_t;
 
-typedef enum {
-      INT = 0,
-      FLOAT,
-      DOUBLE,
-      COMPLEX,
-      STRING,
-      INT_VEC,
-      FLOAT_VEC,
-      DOUBLE_VEC,
-      COMPLEX_VEC,
-}phasma_data_type_t;
+typedef enum
+{
+  INT = 0,
+  FLOAT,
+  DOUBLE,
+  COMPLEX,
+  STRING,
+  INT_VEC,
+  FLOAT_VEC,
+  DOUBLE_VEC,
+  COMPLEX_VEC,
+} phasma_data_type_t;
+
+typedef enum
+{
+  BPSK = 1, QPSK, AM, FM, FSK, GMSK, QAM, ASK, SPREAD_SPECTRUM,
+} phasma_mod_type_t;
 
 #endif /* INCLUDED_PHASMA_API_H */

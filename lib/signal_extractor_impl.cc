@@ -274,10 +274,11 @@ namespace gr
 //	  + ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
 //	  - (d_samp_rate / 2);
 
-      d_center_freq = ((curr_slot * d_channel_bw
-	  + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2);
+      d_center_freq = -1 * (((curr_slot * d_channel_bw
+	  + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2));
 
-      phase_inc = (2.0 * M_PI * d_center_freq) / d_samp_rate;
+
+      phase_inc = (2.0 * M_PI * d_center_freq);
       for (size_t t = 0; t < d_taps.size (); t++) {
 	taps_new[t] = d_taps[t] * std::exp (gr_complex (0, t * phase_inc));
       }
@@ -296,20 +297,10 @@ namespace gr
 			  sig_slot_checkpoint * d_channel_bw,
 			  curr_slot * d_channel_bw, "");
       pmt_t tup;
-//      if ((d_channel_num / span) > 26) {
-//	tup = make_tuple (string_to_symbol (meta.toJSON ()));
-//      }
-//      else {
-//        tup = make_tuple (string_to_symbol (meta.toJSON ()),
-//			  make_blob (sig_rec.iq_samples, iq_size_bytes));
-//        std::cout << "Center: " << d_center_freq << std::endl;
-//      }
       tup = make_tuple (string_to_symbol (meta.toJSON ()),
       			  make_blob (sig_rec.iq_samples, iq_size_bytes));
-      std::cout << "Center: " << d_center_freq << std::endl;
       d_msg_queue.push_back (tup);
 
-      taps_new.clear();
       free (sig_rec.iq_samples);
 
     }
