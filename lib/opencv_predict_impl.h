@@ -53,7 +53,7 @@ private:
 	
 	boost::shared_ptr<boost::thread> d_trigger_thread;
 
-	float
+	std::string
 	get_most_freq_decision(std::vector<float>* predictions);
 
 public:
