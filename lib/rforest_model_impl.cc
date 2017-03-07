@@ -23,6 +23,9 @@
 #endif
 
 #include <gnuradio/io_signature.h>
+#include <gnuradio/math.h>
+#include <algorithm>
+#include <numeric>
 #include <volk/volk.h>
 #include <phasma/log.h>
 #include "rforest_model_impl.h"
@@ -70,7 +73,7 @@ namespace gr
 					    const std::string filename) :
 	    gr::sync_block (
 		"rforest_model",
-		gr::io_signature::make (1, ninport, sizeof(float)),
+		gr::io_signature::make (1, ninport, sizeof(gr_complex)),
 		gr::io_signature::make (0, 0, 0)),
 	    d_npredictors (npredictors),
 	    d_nobservations (nobservations),
@@ -88,7 +91,7 @@ namespace gr
 	    d_port_label(d_ninport)
     {
       set_output_multiple (100 * d_npredictors);
-      d_input = (float*) malloc (d_npredictors * sizeof(float));
+      d_input = (gr_complex*) malloc (d_npredictors * sizeof(gr_complex));
       d_rfmodel = cv::ml::RTrees::create ();
       bind_port_label(labels);
     }
@@ -122,7 +125,7 @@ namespace gr
 			      gr_vector_const_void_star &input_items,
 			      gr_vector_void_star &output_items)
     {
-      const float *in;
+      const gr_complex *in;
       size_t available_observations = noutput_items / d_npredictors;
 
       if (d_nobservations % d_ninport) {
@@ -130,25 +133,55 @@ namespace gr
 	    "Number of requested dataset observation should be multiple of number of inputs.");
       }
 
-      PHASMA_DEBUG("Available samples: %d\n", noutput_items);
-      PHASMA_DEBUG("Available Observations: %d\n", available_observations);
-      PHASMA_DEBUG("Requested Observations: %d\n", d_nobservations);
+//      PHASMA_DEBUG("Available samples: %d\n", noutput_items);
+//      PHASMA_DEBUG("Available Observations: %d\n", available_observations);
+//      PHASMA_DEBUG("Requested Observations: %d\n", d_nobservations);
+
+      float d_tmp_pred[2];
+      std::vector<float> d_tmp_angle(d_npredictors);
+      std::vector<float> d_tmp_angle_diff;
 
       for (size_t i = 0; i < available_observations; i++) {
 	for (size_t n = 0; n < d_ninport; n++) {
 
-	  in = (const float*) input_items[n];
+	  in = (const gr_complex*) input_items[n];
 
 	  memcpy (d_input, &in[i * d_npredictors],
-		  d_npredictors * sizeof(float));
+		  d_npredictors * sizeof(gr_complex));
 
+	  //Angle std
+	  for (size_t s = 0; s < d_npredictors; s++) {
+	    d_tmp_angle[s] = gr::fast_atan2f(d_input[s]);
+	  }
+	  double sum = std::accumulate(d_tmp_angle.begin(), d_tmp_angle.end(), 0.0);
+	  double mean = sum / d_tmp_angle.size();
+
+	  std::vector<double> diff(d_tmp_angle.size());
+	  std::transform(d_tmp_angle.begin(), d_tmp_angle.end(), diff.begin(), [mean](double x) { return x - mean; });
+	  double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+	  double stdev = std::sqrt(sq_sum / d_tmp_angle.size());
+	  d_tmp_pred[0] = stdev;
+
+	  //Angle diff std
+	  for (size_t s = 0; s < d_npredictors; s=s+2) {
+	    d_tmp_angle_diff.push_back(gr::fast_atan2f (d_input[s+1]) - gr::fast_atan2f (d_input[s]));
+	  }
+	  sum = std::accumulate(d_tmp_angle_diff.begin(), d_tmp_angle_diff.end(), 0.0);
+	  mean = sum / d_tmp_angle_diff.size();
+
+	  std::vector<double> diff2(d_tmp_angle_diff.size());
+	  std::transform(d_tmp_angle_diff.begin(), d_tmp_angle_diff.end(), diff2.begin(), [mean](double x) { return x - mean; });
+	  sq_sum = std::inner_product(diff2.begin(), diff2.end(), diff2.begin(), 0.0);
+	  double stdev_diff = std::sqrt(sq_sum / d_tmp_angle_diff.size());
+	  d_tmp_pred[1] = stdev_diff;
+	  d_tmp_angle_diff.clear();
 	  /* Insert new dataset row */
 	  if (d_predictors.empty () && d_labels.empty ()) {
-	    d_predictors = cv::Mat (1, d_npredictors, CV_32F, d_input);
+	    d_predictors = cv::Mat (1, 2, CV_32F, d_tmp_pred);
 	    d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
 	  }
 	  else {
-	    cv::vconcat (cv::Mat (1, d_npredictors, CV_32F, d_input),
+	    cv::vconcat (cv::Mat (1, 2, CV_32F, d_tmp_pred),
 			 d_predictors, d_predictors);
 	    cv::vconcat (cv::Mat (1, 1, CV_32F, d_port_label[n]), d_labels, d_labels);
 	  }
@@ -156,10 +189,11 @@ namespace gr
 
 	  if (d_remaining == 0) {
 	    // TODO: Train model
+	    std::cout << d_predictors << std::endl;
 	    PHASMA_LOG_INFO("====== Dataset creation =====\n");
-	    cv::Mat var_types (1, d_npredictors + 1, CV_8UC1,
+	    cv::Mat var_types (1, 2 + 1, CV_8UC1,
 			       cv::Scalar (cv::ml::VAR_ORDERED));
-	    var_types.at<uchar> (d_npredictors) = cv::ml::VAR_CATEGORICAL;
+	    var_types.at<uchar> (2) = cv::ml::VAR_CATEGORICAL;
 	    d_train_data = cv::ml::TrainData::create (d_predictors,
 						      cv::ml::ROW_SAMPLE,
 						      d_labels, cv::noArray (),

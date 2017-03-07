@@ -99,8 +99,7 @@ namespace gr
 
       d_taps = taps;
 
-      d_tmp = (gr_complex*) volk_malloc (
-	  d_conseq_channel_num * d_ifft_size * sizeof(gr_complex), 32);
+      d_tmp = new gr_complex[d_conseq_channel_num * d_ifft_size];
 
       /* Calculation of Blackmann-Harris window */
       for (size_t j = 0; j < d_conseq_channel_num; j++) {
@@ -135,10 +134,9 @@ namespace gr
     {
       for (size_t i = 0; i < d_conseq_channel_num; i++) {
 	delete d_filter[i];
-	volk_free (d_blackmann_harris_win[i]);
       }
 
-      volk_free (d_tmp);
+      delete [] d_tmp;
 
       delete[] d_noise_floor;
     }
@@ -265,7 +263,7 @@ namespace gr
 
       sig_rec.start_slot_idx = sig_slot_checkpoint;
       sig_rec.end_slot_idx = curr_slot;
-      sig_rec.iq_samples = (gr_complex*) malloc (iq_size_bytes);
+      sig_rec.iq_samples = new gr_complex[iq_size_bytes];
 
       /* TODO: Mind the case of multiple available snapshots */
       const gr_complex* sig_ptr = &in[sig_slot_checkpoint * d_ifft_size];
@@ -298,10 +296,10 @@ namespace gr
 			  curr_slot * d_channel_bw, "");
       pmt_t tup;
       tup = make_tuple (string_to_symbol (meta.toJSON ()),
-      			  make_blob (sig_rec.iq_samples, iq_size_bytes));
+      			make_blob (sig_rec.iq_samples, iq_size_bytes));
       d_msg_queue.push_back (tup);
 
-      free (sig_rec.iq_samples);
+      delete [] sig_rec.iq_samples;
 
     }
 

@@ -24,6 +24,9 @@
 
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <gnuradio/math.h>
+#include <algorithm>
+#include <numeric>
 #include <pmt/pmt.h>
 #include <json/json.h>
 #include "opencv_predict_impl.h"
@@ -83,13 +86,6 @@ namespace gr
 	PHASMA_ERROR("Could not read the classifier ", d_filename);
       }
 
-      // TODO: Fix hard-coded value. Mind buffer sizes cause it's a mess.
-      d_input = new gr_complex[d_npredictors * 1000];
-      d_input_re = (float*) volk_malloc (sizeof(float) * d_npredictors * 1000,
-					 32);
-      d_input_imag = (float*) volk_malloc (sizeof(float) * d_npredictors * 1000,
-					   32);
-
       /*  */
       d_trigger_thread = boost::shared_ptr<boost::thread> (
 	  new boost::thread (
@@ -101,9 +97,6 @@ namespace gr
      */
     opencv_predict_impl::~opencv_predict_impl ()
     {
-      delete[] d_input;
-      volk_free (d_input_re);
-      volk_free (d_input_imag);
     }
 
     void
@@ -117,38 +110,64 @@ namespace gr
       size_t available_observations = 0;
       void* data;
       std::vector<float> predictions;
-
+      std::vector<float> d_tmp_angle;
+      std::vector<float> d_tmp_angle_diff;
       while (true) {
 	try {
 	  // Access the message queue
 	  msg = delete_head_blocking (pmt::mp ("in"));
 	  tuple = pmt::vector_ref (msg, curr_sig);
+	  float d_tmp_pred[2];
 	  switch (d_data_type)
 	    {
-	    case COMPLEX:
+	    case COMPLEX: {
 	      data = (gr_complex *) pmt::blob_data (pmt::tuple_ref (tuple, 1));
 	      available_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 		  / sizeof(gr_complex);
-//				std::cout << "Bytes: " << pmt::blob_length(pmt::tuple_ref(tuple, 1)) << std::endl;
-//				std::cout << "Samples: " << available_samples << std::endl;
-	      volk_32fc_deinterleave_32f_x2 (d_input_re, d_input_imag,
-					     (gr_complex *) data,
-					     available_samples - 1);
-	      // Finally we handle floats
-	      available_samples = available_samples * 2;
 
-	      // Convert iq samples into a interleaved vector
-	      for (size_t s = 0; s < available_samples - 1; s++) {
-		d_input[s] = d_input_re[s];
-		d_input[s + 1] = d_input_imag[s];
+	      //Angle std
+	      for (size_t s = 0; s < available_samples; s++) {
+		d_tmp_angle.push_back(gr::fast_atan2f (((gr_complex*)data)[s]));
 	      }
+	      double sum = std::accumulate (d_tmp_angle.begin (),
+					    d_tmp_angle.end (), 0.0);
+	      double mean = sum / d_tmp_angle.size ();
+
+	      std::vector<double> diff (d_tmp_angle.size ());
+	      std::transform (d_tmp_angle.begin (), d_tmp_angle.end (),
+			      diff.begin (),
+			      [mean](double x) {return x - mean;});
+	      double sq_sum = std::inner_product (diff.begin (), diff.end (),
+						  diff.begin (), 0.0);
+	      double stdev = std::sqrt (sq_sum / d_tmp_angle.size ());
+	      d_tmp_pred[0] = stdev;
+
+	      //Angle diff std
+	      for (size_t s = 0; s < available_samples; s = s + 2) {
+		d_tmp_angle_diff.push_back (
+		    gr::fast_atan2f (((gr_complex*)data)[s + 1])
+			- gr::fast_atan2f (((gr_complex*)data)[s]));
+	      }
+	      sum = std::accumulate (d_tmp_angle_diff.begin (),
+				     d_tmp_angle_diff.end (), 0.0);
+	      mean = sum / d_tmp_angle_diff.size ();
+
+	      std::vector<double> diff2 (d_tmp_angle_diff.size ());
+	      std::transform (d_tmp_angle_diff.begin (),
+			      d_tmp_angle_diff.end (), diff2.begin (),
+			      [mean](double x) {return x - mean;});
+	      sq_sum = std::inner_product (diff2.begin (), diff2.end (),
+					   diff2.begin (), 0.0);
+	      double stdev_diff = std::sqrt (sq_sum / d_tmp_angle_diff.size ());
+	      d_tmp_pred[1] = stdev_diff;
+	      d_tmp_angle_diff.clear ();
+	      d_tmp_angle.clear();
+	    }
 	      break;
 	    case FLOAT:
 	      data = (float *) pmt::blob_data (pmt::tuple_ref (tuple, 1));
 	      available_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 		  / sizeof(float);
-	      memcpy (d_input, data,
-		      pmt::blob_length (pmt::tuple_ref (tuple, 1)));
 	      break;
 	    }
 
@@ -156,12 +175,13 @@ namespace gr
 	   * Iterate through all available observations of data provided by
 	   * the incoming tuple message
 	   */
-	  available_observations = available_samples / d_npredictors;
+	  available_observations = 1;
 	  for (size_t i = 0; i < available_observations; i++) {
 	    /* Insert new dataset row */
-	    d_predictors = cv::Mat (1, d_npredictors, CV_32F, d_input);
-	    memcpy (d_predictors.ptr (), &d_input[i * d_npredictors],
-		    d_npredictors * sizeof(float));
+	    d_predictors = cv::Mat (1, 2, CV_32F, d_tmp_pred);
+	    std::cout << "Predictors: " << d_predictors << std::endl;
+//	    memcpy (d_predictors.ptr (), &d_input[i * d_npredictors],
+//		    d_npredictors * sizeof(float));
 	    d_labels.at<float> (0, 0) = 0;
 	    d_data = cv::ml::TrainData::create (d_predictors,
 						cv::ml::ROW_SAMPLE, d_labels);
@@ -174,7 +194,7 @@ namespace gr
 		{
 		  predictions.push_back (
 		      reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
-			  d_data->getSamples (), predict_labels));
+			  d_data->getSamples(), predict_labels));
 		  break;
 		}
 	      default:
@@ -183,9 +203,6 @@ namespace gr
 		}
 	      }
 	  }
-//			for (size_t j=0; j<predictions.size(); j++){
-//			  std::cout << "Hey! Pred: " << predictions[j] << std::endl;
-//			}
 	  Json::Value root;
 	  Json::Reader reader;
 	  bool parsedSuccess = reader.parse (
@@ -228,7 +245,7 @@ namespace gr
       size_t tmp = 0;
       float max_idx = 0;
 
-      for (size_t i = 0; i <= d_nlabels; i++) {
+      for (size_t i = 1; i <= d_nlabels; i++) {
 	tmp = std::count (predictions->begin (), predictions->end (), i);
 	if (tmp > max) {
 	  max = tmp;
