@@ -921,7 +921,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(672, 880)</value>
+      <value>(672, 872)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -999,7 +999,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1032, 548)</value>
+      <value>(952, 620)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1148,7 +1148,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(856, 868)</value>
+      <value>(856, 860)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1348,7 +1348,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(128, 876)</value>
+      <value>(128, 868)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1454,7 +1454,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1168, 548)</value>
+      <value>(1104, 620)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1505,7 +1505,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(488, 876)</value>
+      <value>(488, 868)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1584,7 +1584,7 @@
     </param>
     <param>
       <key>samples_per_symbol</key>
-      <value>128</value>
+      <value>32</value>
     </param>
     <param>
       <key>verbose</key>
@@ -1647,11 +1647,11 @@
     </param>
     <param>
       <key>constellation_points</key>
-      <value>4</value>
+      <value>2</value>
     </param>
     <param>
       <key>samples_per_symbol</key>
-      <value>64</value>
+      <value>32</value>
     </param>
     <param>
       <key>verbose</key>
@@ -1749,7 +1749,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(296, 848)</value>
+      <value>(296, 840)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3282,7 +3282,7 @@
     </param>
     <param>
       <key>nlabels</key>
-      <value>16</value>
+      <value>7</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -3310,7 +3310,7 @@
     </param>
     <param>
       <key>npredictors</key>
-      <value>128</value>
+      <value>512</value>
     </param>
     <param>
       <key>filename</key>
@@ -3341,7 +3341,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(200, 700)</value>
+      <value>(200, 684)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3371,6 +3371,10 @@
       <value></value>
     </param>
     <param>
+      <key>center_freq</key>
+      <value>1e9</value>
+    </param>
+    <param>
       <key>channel_bw</key>
       <value>20e3</value>
     </param>
@@ -3384,19 +3388,19 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>True</value>
     </param>
     <param>
       <key>threshold_db</key>
-      <value>-80</value>
+      <value>-70</value>
     </param>
     <param>
       <key>threshold_margin_db</key>
-      <value>10</value>
+      <value>3</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(456, 460)</value>
+      <value>(464, 468)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3404,11 +3408,11 @@
     </param>
     <param>
       <key>id</key>
-      <value>phasma_signal_extractor_0</value>
+      <value>phasma_signal_extractor_1</value>
     </param>
     <param>
       <key>ifft_size</key>
-      <value>ifft_size</value>
+      <value>64</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -3436,7 +3440,7 @@
     </param>
     <param>
       <key>silence_guardband</key>
-      <value>8e3</value>
+      <value>1e3</value>
     </param>
     <param>
       <key>taps</key>
@@ -3778,7 +3782,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(968, 856)</value>
+      <value>(968, 848)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -4046,7 +4050,7 @@
     </param>
     <param>
       <key>nconnections</key>
-      <value>2</value>
+      <value>1</value>
     </param>
     <param>
       <key>size</key>
@@ -4504,7 +4508,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(392, 760)</value>
+      <value>(192, 760)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -6220,7 +6224,7 @@
   </connection>
   <connection>
     <source_block_id>blocks_complex_to_mag_squared_0_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
+    <sink_block_id>phasma_signal_extractor_1</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -6286,7 +6290,7 @@
   </connection>
   <connection>
     <source_block_id>blocks_throttle_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
+    <sink_block_id>phasma_signal_extractor_1</sink_block_id>
     <source_key>0</source_key>
     <sink_key>1</sink_key>
   </connection>
@@ -6346,7 +6350,7 @@
   </connection>
   <connection>
     <source_block_id>phasma_eigenvalue_signal_detector_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
+    <sink_block_id>phasma_signal_extractor_1</sink_block_id>
     <source_key>threshold</source_key>
     <sink_key>threshold_rcv</sink_key>
   </connection>
@@ -6375,13 +6379,13 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>phasma_signal_extractor_0</source_block_id>
+    <source_block_id>phasma_signal_extractor_1</source_block_id>
     <sink_block_id>phasma_opencv_predict_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
   </connection>
   <connection>
-    <source_block_id>phasma_signal_extractor_0</source_block_id>
+    <source_block_id>phasma_signal_extractor_1</source_block_id>
     <sink_block_id>phasma_sigmf_debug_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>sigmf</sink_key>

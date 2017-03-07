@@ -133,9 +133,6 @@ namespace gr
 	    "Number of requested dataset observation should be multiple of number of inputs.");
       }
 
-//      PHASMA_DEBUG("Available samples: %d\n", noutput_items);
-//      PHASMA_DEBUG("Available Observations: %d\n", available_observations);
-//      PHASMA_DEBUG("Requested Observations: %d\n", d_nobservations);
 
       float d_tmp_pred[2];
       std::vector<float> d_tmp_angle(d_npredictors);
@@ -189,7 +186,6 @@ namespace gr
 
 	  if (d_remaining == 0) {
 	    // TODO: Train model
-	    std::cout << d_predictors << std::endl;
 	    PHASMA_LOG_INFO("====== Dataset creation =====\n");
 	    cv::Mat var_types (1, 2 + 1, CV_8UC1,
 			       cv::Scalar (cv::ml::VAR_ORDERED));

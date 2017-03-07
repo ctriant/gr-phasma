@@ -54,7 +54,7 @@ private:
 	boost::shared_ptr<boost::thread> d_trigger_thread;
 
 	std::string
-	get_most_freq_decision(std::vector<float>* predictions);
+	decode_decision(int decision);
 
 public:
 	opencv_predict_impl(const size_t classifier_type, const size_t data_type,

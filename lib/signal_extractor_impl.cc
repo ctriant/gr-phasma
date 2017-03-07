@@ -41,15 +41,15 @@ namespace gr
     signal_extractor::sptr
     signal_extractor::make (float samp_rate, float channel_bw, size_t ifft_size,
 			    const std::vector<gr_complex> &taps,
-			    const float silence_guardband,
-			    float signal_duration, float min_sig_bw,
-			    float threshold_db, float threshold_margin_db,
+			    const float silence_guardband, float center_freq, 
+			    float signal_duration, float min_sig_bw, 
+			    float threshold_db, float threshold_margin_db, 
 			    size_t sig_num)
     {
       return gnuradio::get_initial_sptr (
 	  new signal_extractor_impl (samp_rate, channel_bw, ifft_size, taps,
-				     silence_guardband, signal_duration,
-				     min_sig_bw, threshold_db,
+				     silence_guardband, center_freq, 
+				     signal_duration, min_sig_bw, threshold_db,
 				     threshold_margin_db, sig_num));
     }
 
@@ -59,8 +59,8 @@ namespace gr
     signal_extractor_impl::signal_extractor_impl (
 	float samp_rate, float channel_bw, size_t ifft_size,
 	const std::vector<gr_complex> &taps, const float silence_guardband,
-	float signal_duration, float min_sig_bw, float threshold_db,
-	float threshold_margin_db, size_t sig_num) :
+	float center_freq, float signal_duration, float min_sig_bw, 
+	float threshold_db, float threshold_margin_db, size_t sig_num) :
 	    gr::sync_block (
 		"signal_extractor",
 		gr::io_signature::make2 (2, 2, sizeof(float),
@@ -72,6 +72,7 @@ namespace gr
 	    d_silence_guardband (silence_guardband),
 	    d_silence_guardband_samples (
 		ceil ((d_ifft_size * d_silence_guardband) / d_channel_bw)),
+	    d_center_freq (center_freq),
 	    d_channel_num (d_samp_rate / d_channel_bw),
 	    d_fft_size ((d_samp_rate * d_ifft_size) / d_channel_bw),
 	    d_signal_duration (signal_duration),
@@ -255,6 +256,7 @@ namespace gr
       size_t span;
       size_t iq_size_bytes;
       float phase_inc;
+      float center_freq_rel;
       std::vector<gr_complex> taps_new(d_taps.size());
 
       ifft_idx = curr_slot - sig_slot_checkpoint;
@@ -272,11 +274,11 @@ namespace gr
 //	  + ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
 //	  - (d_samp_rate / 2);
 
-      d_center_freq = -1 * (((curr_slot * d_channel_bw
+      center_freq_rel = -1 * (((curr_slot * d_channel_bw
 	  + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2));
 
 
-      phase_inc = (2.0 * M_PI * d_center_freq);
+      phase_inc = (2.0 * M_PI * center_freq_rel);
       for (size_t t = 0; t < d_taps.size (); t++) {
 	taps_new[t] = d_taps[t] * std::exp (gr_complex (0, t * phase_inc));
       }
@@ -288,12 +290,13 @@ namespace gr
 
 
       d_signals.push_back (sig_rec);
-
+      
+      /* TODO: Center frequency is actual starting frequency */
       sigMF meta = sigMF ("cf32", "./", "0.0.1", 0, d_samp_rate, timestamp,
 			  d_abs_signal_start,
 			  d_abs_signal_end - d_abs_signal_start,
-			  sig_slot_checkpoint * d_channel_bw,
-			  curr_slot * d_channel_bw, "");
+			  (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
+			  (curr_slot * d_channel_bw) + d_center_freq, "");
       pmt_t tup;
       tup = make_tuple (string_to_symbol (meta.toJSON ()),
       			make_blob (sig_rec.iq_samples, iq_size_bytes));

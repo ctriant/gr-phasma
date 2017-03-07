@@ -5,19 +5,20 @@
 	<category>[phasma]</category>
 	<import>import phasma</import>
 	<make>phasma.signal_extractor($samp_rate, $channel_bw, 
-		$ifft_size, $taps, $silence_guardband, $signal_duration, $min_sig_bw,
-		$threshold_db, $threshold_margin_db, $sig_num)
+		$ifft_size, $taps, $silence_guardband, $center_freq,
+		 $signal_duration, $min_sig_bw, $threshold_db, $threshold_margin_db, 
+		 $sig_num)
 	</make>
 
 	<param>
 		<name>Sampling Rate</name>
 		<key>samp_rate</key>
-		<value>12.5e6</value>
+		<value>10e6</value>
 		<type>float</type>
 	</param>
 
 	<param>
-		<name>Channel Bandwidth</name>
+		<name>Channel Bandwidth (Hz)</name>
 		<key>channel_bw</key>
 		<value>20e3</value>
 		<type>float</type>
@@ -26,7 +27,7 @@
 	<param>
 		<name>IFFT Size</name>
 		<key>ifft_size</key>
-		<value>100</value>
+		<value>64</value>
 		<type>int</type>
 	</param>
 
@@ -38,12 +39,19 @@
 	</param>	
 
 	<param>
-		<name>Silence Guardband (kHz)</name>
+		<name>Silence Guardband (Hz)</name>
 		<key>silence_guardband</key>
 		<value>1e3</value>
 		<type>float</type>
 	</param>
-
+	
+	<param>
+		<name>Frequency Start (Hz)</name>
+		<key>center_freq</key>
+		<value></value>
+		<type>float</type>
+	</param>
+	
 	<param>
 		<name>Signal Duration</name>
 		<key>signal_duration</key>
