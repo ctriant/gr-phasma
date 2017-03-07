@@ -25,8 +25,8 @@
 
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <phasma/utils/sigMF.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <phasma/utils/sigMF.h>
 #include "signal_extractor_impl.h"
 
 namespace gr
@@ -41,14 +41,14 @@ namespace gr
     signal_extractor::sptr
     signal_extractor::make (float samp_rate, float channel_bw, size_t ifft_size,
 			    const std::vector<gr_complex> &taps,
-			    const float silence_guardband, float center_freq, 
-			    float signal_duration, float min_sig_bw, 
-			    float threshold_db, float threshold_margin_db, 
+			    const float silence_guardband, float center_freq,
+			    float signal_duration, float min_sig_bw,
+			    float threshold_db, float threshold_margin_db,
 			    size_t sig_num)
     {
       return gnuradio::get_initial_sptr (
 	  new signal_extractor_impl (samp_rate, channel_bw, ifft_size, taps,
-				     silence_guardband, center_freq, 
+				     silence_guardband, center_freq,
 				     signal_duration, min_sig_bw, threshold_db,
 				     threshold_margin_db, sig_num));
     }
@@ -59,7 +59,7 @@ namespace gr
     signal_extractor_impl::signal_extractor_impl (
 	float samp_rate, float channel_bw, size_t ifft_size,
 	const std::vector<gr_complex> &taps, const float silence_guardband,
-	float center_freq, float signal_duration, float min_sig_bw, 
+	float center_freq, float signal_duration, float min_sig_bw,
 	float threshold_db, float threshold_margin_db, size_t sig_num) :
 	    gr::sync_block (
 		"signal_extractor",
@@ -126,6 +126,7 @@ namespace gr
       for (size_t i = 0; i < d_fft_size; i++) {
 	d_noise_floor[i] = d_threshold_linear;
       }
+
     }
 
     /*
@@ -137,7 +138,7 @@ namespace gr
 	delete d_filter[i];
       }
 
-      delete [] d_tmp;
+      delete[] d_tmp;
 
       delete[] d_noise_floor;
     }
@@ -211,8 +212,8 @@ namespace gr
 		sig_slot_curr = d_abs_signal_end / d_ifft_size;
 		if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps) {
 		  record_signal (in, &d_signals, sig_slot_checkpoint,
-		  			       sig_slot_curr,
-		  			       to_iso_extended_string (curr_milliseconds));
+				 sig_slot_curr,
+				 to_iso_extended_string (curr_milliseconds));
 		  sig_count++;
 		}
 		sig_alarm = false;
@@ -257,7 +258,7 @@ namespace gr
       size_t iq_size_bytes;
       float phase_inc;
       float center_freq_rel;
-      std::vector<gr_complex> taps_new(d_taps.size());
+      std::vector<gr_complex> taps_new (d_taps.size ());
 
       ifft_idx = curr_slot - sig_slot_checkpoint;
       span = curr_slot - sig_slot_checkpoint + 1;
@@ -274,35 +275,41 @@ namespace gr
 //	  + ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
 //	  - (d_samp_rate / 2);
 
-      center_freq_rel = -1 * (((curr_slot * d_channel_bw
-	  + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2));
-
+      center_freq_rel = -1
+	  * (((curr_slot * d_channel_bw + sig_slot_checkpoint * d_channel_bw)
+	      / 2) - (d_samp_rate / 2));
 
       phase_inc = (2.0 * M_PI * center_freq_rel);
       for (size_t t = 0; t < d_taps.size (); t++) {
 	taps_new[t] = d_taps[t] * std::exp (gr_complex (0, t * phase_inc));
       }
-      d_rotator.set_phase_incr (exp(gr_complex(0, -1 * (d_channel_num / span) * phase_inc)));
+      d_rotator.set_phase_incr (
+	  exp (gr_complex (0, -1 * (d_channel_num / span) * phase_inc)));
 
       d_filter[ifft_idx]->set_taps (taps_new);
       d_rotator.rotateN (d_tmp, in, d_fft_size);
-      d_filter[ifft_idx]->filter (d_ifft_size*span, d_tmp, sig_rec.iq_samples);
-
+      d_filter[ifft_idx]->filter (d_ifft_size * span, d_tmp,
+				  sig_rec.iq_samples);
 
       d_signals.push_back (sig_rec);
-      
+
       /* TODO: Center frequency is actual starting frequency */
-      sigMF meta = sigMF ("cf32", "./", "0.0.1", 0, d_samp_rate, timestamp,
-			  d_abs_signal_start,
-			  d_abs_signal_end - d_abs_signal_start,
-			  (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
-			  (curr_slot * d_channel_bw) + d_center_freq, "");
+      sigMF meta_record = sigMF ("cf32", "./", "1.1.0");
+
+      meta_record.add_capture (0, d_samp_rate);
+      meta_record.add_annotation (d_abs_signal_start,
+			   d_abs_signal_end - d_abs_signal_start, "",
+			   (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
+			   (curr_slot * d_channel_bw) + d_center_freq,
+			   d_channel_num / span,
+			   timestamp);
+
       pmt_t tup;
-      tup = make_tuple (string_to_symbol (meta.toJSON ()),
-      			make_blob (sig_rec.iq_samples, iq_size_bytes));
+      tup = make_tuple (string_to_symbol (meta_record.toJSON ()),
+			make_blob (sig_rec.iq_samples, iq_size_bytes));
       d_msg_queue.push_back (tup);
 
-      delete [] sig_rec.iq_samples;
+      delete[] sig_rec.iq_samples;
 
     }
 

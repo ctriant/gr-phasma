@@ -29,6 +29,7 @@
 #include <numeric>
 #include <pmt/pmt.h>
 #include <json/json.h>
+#include <phasma/utils/sigMF.h>
 #include "opencv_predict_impl.h"
 
 namespace gr
@@ -39,11 +40,11 @@ namespace gr
     opencv_predict::sptr
     opencv_predict::make (const size_t classifier_type, const size_t data_type,
 			  const size_t npredictors, const size_t nlabels,
-			  const std::string filename)
+			  const std::string filename, const std::string metafile)
     {
       return gnuradio::get_initial_sptr (
 	  new opencv_predict_impl (classifier_type, data_type, npredictors,
-				   nlabels, filename));
+				   nlabels, filename, metafile));
     }
 
     /*
@@ -53,7 +54,8 @@ namespace gr
 					      const size_t data_type,
 					      const size_t npredictors,
 					      const size_t nlabels,
-					      const std::string filename) :
+					      const std::string filename,
+					      const std::string metafile) :
 	    gr::block ("opencv_predict", gr::io_signature::make (0, 0, 0),
 		       gr::io_signature::make (0, 0, 0)),
 	    d_classifier_type (classifier_type),
@@ -62,7 +64,8 @@ namespace gr
 	    d_labels (cv::Mat (1, nlabels, CV_32F)),
 	    d_nlabels (nlabels),
 	    d_predictors (cv::Mat (1, npredictors, CV_32F)),
-	    d_filename (filename)
+	    d_filename (filename),
+	    d_metafile (metafile)
     {
 
       message_port_register_in (pmt::mp ("in"));
@@ -110,16 +113,16 @@ namespace gr
       size_t available_observations = 0;
       void* data;
       int decision;
-      
+
       double sum;
       double mean;
       double sq_sum;
       double stdev;
       double stdev_diff;
-      
+
       std::vector<float> d_tmp_angle;
       std::vector<float> d_tmp_angle_diff;
-      
+
       while (true) {
 	try {
 	  // Access the message queue
@@ -140,8 +143,8 @@ namespace gr
 		  d_tmp_angle.push_back (
 		      gr::fast_atan2f (((gr_complex*) data)[s]));
 		}
-		sum = std::accumulate (d_tmp_angle.begin (),
-					      d_tmp_angle.end (), 0.0);
+		sum = std::accumulate (d_tmp_angle.begin (), d_tmp_angle.end (),
+				       0.0);
 		mean = sum / d_tmp_angle.size ();
 
 		std::vector<double> diff (d_tmp_angle.size ());
@@ -149,7 +152,7 @@ namespace gr
 				diff.begin (),
 				[mean](double x) {return x - mean;});
 		sq_sum = std::inner_product (diff.begin (), diff.end (),
-						    diff.begin (), 0.0);
+					     diff.begin (), 0.0);
 		stdev = std::sqrt (sq_sum / d_tmp_angle.size ());
 		d_tmp_pred[0] = stdev;
 
@@ -169,8 +172,7 @@ namespace gr
 				[mean](double x) {return x - mean;});
 		sq_sum = std::inner_product (diff2.begin (), diff2.end (),
 					     diff2.begin (), 0.0);
-		stdev_diff = std::sqrt (
-		    sq_sum / d_tmp_angle_diff.size ());
+		stdev_diff = std::sqrt (sq_sum / d_tmp_angle_diff.size ());
 		d_tmp_pred[1] = stdev_diff;
 		d_tmp_angle_diff.clear ();
 		d_tmp_angle.clear ();
@@ -201,7 +203,7 @@ namespace gr
 	      {
 	      case RANDOM_FOREST:
 		{
-		  decision = 
+		  decision =
 		      reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
 			  d_data->getSamples (), predict_labels);
 		  break;
@@ -212,19 +214,27 @@ namespace gr
 		}
 	      }
 	  }
-	  Json::Value root;
-	  Json::Reader reader;
-	  bool parsedSuccess = reader.parse (
-	      pmt::symbol_to_string (pmt::tuple_ref (tuple, 0)), root, false);
-
-	  if (not parsedSuccess) {
-	    return;
-	  }
-
+	  
 	  std::string final_dec = decode_decision (decision);
-	  root["annotation"]["core:comment"] = final_dec;
+	  
+	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");;
+	  sigMF meta = sigMF ("cf32", "./", "1.1.0");;
+	  
+	  meta_msg.parse_string(pmt::symbol_to_string (pmt::tuple_ref (tuple, 0)), final_dec);
+	  
+	  meta.parse_file (d_metafile);
+	  meta.add_annotation(meta_msg.get_annotation()[0]);
+	  //meta.add_capture(meta_msg.get_capture()[0]);
+	  
+	  /* Append output file */
+	  std::ofstream outfile;
+	  outfile.open (d_metafile, std::ios_base::in);
+	  outfile << meta.toJSON ();
+	  outfile.close ();
+
+	  
 	  message_port_pub (pmt::intern ("classification"),
-			    pmt::string_to_symbol (root.toStyledString ()));
+			    pmt::string_to_symbol (meta_msg.getRoot().toStyledString ()));
 	  // Go catch the next tuple of the incoming vector message
 	  curr_sig++;
 	}

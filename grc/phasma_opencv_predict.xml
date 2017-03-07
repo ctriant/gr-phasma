@@ -8,7 +8,8 @@
   							  $data_type,
 			   				  $npredictors,
 			   				  $nlabels,
-			   				  $filename)</make>
+			   				  $filename,
+			   				  $metafile)</make>
 			   				  
 			   				  
 	<param>
@@ -50,6 +51,12 @@
 	<param>
 		<name>Trained Model</name>
 		<key>filename</key>
+		<type>file_save</type>
+	</param>
+	
+	<param>
+		<name>Metafile</name>
+		<key>metafile</key>
 		<type>file_save</type>
 	</param>
 	

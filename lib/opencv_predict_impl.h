@@ -52,6 +52,10 @@ private:
 	const std::string d_filename;
 	
 	boost::shared_ptr<boost::thread> d_trigger_thread;
+	
+	Json::Value d_root;
+	
+	const std::string d_metafile;
 
 	std::string
 	decode_decision(int decision);
@@ -59,7 +63,7 @@ private:
 public:
 	opencv_predict_impl(const size_t classifier_type, const size_t data_type,
 			const size_t npredictors, const size_t nlabels, 
-			const std::string filename);
+			const std::string filename, const std::string metafile);
 	~opencv_predict_impl();
 
 	void 

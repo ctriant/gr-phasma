@@ -3371,10 +3371,6 @@
       <value></value>
     </param>
     <param>
-      <key>center_freq</key>
-      <value>1e9</value>
-    </param>
-    <param>
       <key>channel_bw</key>
       <value>20e3</value>
     </param>
@@ -3399,8 +3395,12 @@
       <value>3</value>
     </param>
     <param>
+      <key>center_freq</key>
+      <value>3190e6</value>
+    </param>
+    <param>
       <key>_coordinate</key>
-      <value>(464, 468)</value>
+      <value>(472, 464)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3408,7 +3408,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>phasma_signal_extractor_1</value>
+      <value>phasma_signal_extractor_0</value>
     </param>
     <param>
       <key>ifft_size</key>
@@ -3429,6 +3429,10 @@
     <param>
       <key>sig_num</key>
       <value>100</value>
+    </param>
+    <param>
+      <key>filename</key>
+      <value>/home/ctriant/output.json</value>
     </param>
     <param>
       <key>samp_rate</key>
@@ -3471,7 +3475,7 @@
     </param>
     <param>
       <key>fc</key>
-      <value>samp_rate/2</value>
+      <value>3195e6</value>
     </param>
     <param>
       <key>comment</key>
@@ -6224,7 +6228,7 @@
   </connection>
   <connection>
     <source_block_id>blocks_complex_to_mag_squared_0_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_1</sink_block_id>
+    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -6290,7 +6294,7 @@
   </connection>
   <connection>
     <source_block_id>blocks_throttle_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_1</sink_block_id>
+    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>1</sink_key>
   </connection>
@@ -6350,7 +6354,7 @@
   </connection>
   <connection>
     <source_block_id>phasma_eigenvalue_signal_detector_0</source_block_id>
-    <sink_block_id>phasma_signal_extractor_1</sink_block_id>
+    <sink_block_id>phasma_signal_extractor_0</sink_block_id>
     <source_key>threshold</source_key>
     <sink_key>threshold_rcv</sink_key>
   </connection>
@@ -6379,13 +6383,13 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>phasma_signal_extractor_1</source_block_id>
+    <source_block_id>phasma_signal_extractor_0</source_block_id>
     <sink_block_id>phasma_opencv_predict_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
   </connection>
   <connection>
-    <source_block_id>phasma_signal_extractor_1</source_block_id>
+    <source_block_id>phasma_signal_extractor_0</source_block_id>
     <sink_block_id>phasma_sigmf_debug_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>sigmf</sink_key>
