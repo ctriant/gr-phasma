@@ -40,7 +40,8 @@ namespace gr
     opencv_predict::sptr
     opencv_predict::make (const size_t classifier_type, const size_t data_type,
 			  const size_t npredictors, const size_t nlabels,
-			  const std::string filename, const std::string metafile)
+			  const std::string filename,
+			  const std::string metafile)
     {
       return gnuradio::get_initial_sptr (
 	  new opencv_predict_impl (classifier_type, data_type, npredictors,
@@ -121,14 +122,18 @@ namespace gr
       double stdev_diff;
 
       std::vector<float> d_tmp_angle;
+      std::vector<float> d_tmp_i;
+      std::vector<float> d_tmp_q;
       std::vector<float> d_tmp_angle_diff;
+      std::vector<float> d_tmp_i_diff;
+      std::vector<float> d_tmp_q_diff;
 
       while (true) {
 	try {
 	  // Access the message queue
 	  msg = delete_head_blocking (pmt::mp ("in"));
 	  tuple = pmt::vector_ref (msg, curr_sig);
-	  float d_tmp_pred[2];
+	  float d_tmp_pred[4];
 	  switch (d_data_type)
 	    {
 	    case COMPLEX:
@@ -138,11 +143,14 @@ namespace gr
 		available_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 		    / sizeof(gr_complex);
 
-		/* Standard deviation of complex angle */
 		for (size_t s = 0; s < available_samples; s++) {
 		  d_tmp_angle.push_back (
 		      gr::fast_atan2f (((gr_complex*) data)[s]));
+		  d_tmp_i.push_back (((gr_complex*) data)[s].imag ());
+		  d_tmp_q.push_back (((gr_complex*) data)[s].imag ());
 		}
+
+		/* Standard deviation of complex angle */
 		sum = std::accumulate (d_tmp_angle.begin (), d_tmp_angle.end (),
 				       0.0);
 		mean = sum / d_tmp_angle.size ();
@@ -156,11 +164,43 @@ namespace gr
 		stdev = std::sqrt (sq_sum / d_tmp_angle.size ());
 		d_tmp_pred[0] = stdev;
 
+		//I std
+		sum = std::accumulate (d_tmp_i.begin (), d_tmp_i.end (), 0.0);
+		mean = sum / d_tmp_i.size ();
+		std::vector<double> diff3 (d_tmp_i.size ());
+		std::transform (d_tmp_i.begin (), d_tmp_i.end (),
+				diff3.begin (),
+				[mean](double x) {return x - mean;});
+		sq_sum = std::inner_product (diff3.begin (), diff3.end (),
+					     diff3.begin (), 0.0);
+		stdev = std::sqrt (sq_sum / d_tmp_i.size ());
+		d_tmp_pred[2] = stdev;
+
+		//Q std
+		sum = std::accumulate (d_tmp_q.begin (), d_tmp_q.end (), 0.0);
+		mean = sum / d_tmp_q.size ();
+		std::vector<double> diff4 (d_tmp_q.size ());
+		std::transform (d_tmp_q.begin (), d_tmp_q.end (),
+				diff4.begin (),
+				[mean](double x) {return x - mean;});
+		sq_sum = std::inner_product (diff4.begin (), diff4.end (),
+					     diff4.begin (), 0.0);
+		stdev = std::sqrt (sq_sum / d_tmp_q.size ());
+		d_tmp_pred[3] = stdev;
+
 		/* Standard deviation of complex angle difference */
-		for (size_t s = 0; s < available_samples; s = s + 2) {
+		//Angle diff std
+		for (size_t s = 0; s < d_npredictors; s = s + 2) {
 		  d_tmp_angle_diff.push_back (
-		      gr::fast_atan2f (((gr_complex*) data)[s + 1])
-			  - gr::fast_atan2f (((gr_complex*) data)[s]));
+		      gr::fast_atan2f (
+			  ((gr_complex*) data)[s + 1]
+			      - gr::fast_atan2f (((gr_complex*) data)[s])));
+		  d_tmp_i_diff.push_back (
+		      ((gr_complex*) data)[s + 1].imag ()
+			  - ((gr_complex*) data)[s].imag ());
+		  d_tmp_q_diff.push_back (
+		      ((gr_complex*) data)[s + 1].real ()
+			  - ((gr_complex*) data)[s].real ());
 		}
 		sum = std::accumulate (d_tmp_angle_diff.begin (),
 				       d_tmp_angle_diff.end (), 0.0);
@@ -174,8 +214,41 @@ namespace gr
 					     diff2.begin (), 0.0);
 		stdev_diff = std::sqrt (sq_sum / d_tmp_angle_diff.size ());
 		d_tmp_pred[1] = stdev_diff;
+//
+//		//I diff std
+//		sum = std::accumulate (d_tmp_i_diff.begin (),
+//				       d_tmp_i_diff.end (), 0.0);
+//		mean = sum / d_tmp_i_diff.size ();
+//
+//		std::vector<double> diff5 (d_tmp_i_diff.size ());
+//		std::transform (d_tmp_i_diff.begin (), d_tmp_i_diff.end (),
+//				diff5.begin (),
+//				[mean](double x) {return x - mean;});
+//		sq_sum = std::inner_product (diff5.begin (), diff5.end (),
+//					     diff5.begin (), 0.0);
+//		stdev_diff = std::sqrt (sq_sum / d_tmp_i_diff.size ());
+//		d_tmp_pred[4] = stdev_diff;
+//
+//		//Q diff std
+//		sum = std::accumulate (d_tmp_q_diff.begin (),
+//				       d_tmp_q_diff.end (), 0.0);
+//		mean = sum / d_tmp_q_diff.size ();
+//
+//		std::vector<double> diff6 (d_tmp_q_diff.size ());
+//		std::transform (d_tmp_q_diff.begin (), d_tmp_q_diff.end (),
+//				diff6.begin (),
+//				[mean](double x) {return x - mean;});
+//		sq_sum = std::inner_product (diff6.begin (), diff6.end (),
+//					     diff6.begin (), 0.0);
+//		stdev_diff = std::sqrt (sq_sum / d_tmp_q_diff.size ());
+//		d_tmp_pred[5] = stdev_diff;
+
 		d_tmp_angle_diff.clear ();
+		//d_tmp_i_diff.clear ();
+		//d_tmp_q_diff.clear ();
 		d_tmp_angle.clear ();
+		d_tmp_q.clear ();
+		d_tmp_i.clear ();
 	      }
 	      break;
 	    case FLOAT:
@@ -192,7 +265,7 @@ namespace gr
 	  available_observations = 1;
 	  for (size_t i = 0; i < available_observations; i++) {
 	    /* Insert new dataset row */
-	    d_predictors = cv::Mat (1, 2, CV_32F, d_tmp_pred);
+	    d_predictors = cv::Mat (1, 4, CV_32F, d_tmp_pred);
 	    d_labels.at<float> (0, 0) = 0;
 	    d_data = cv::ml::TrainData::create (d_predictors,
 						cv::ml::ROW_SAMPLE, d_labels);
@@ -214,27 +287,30 @@ namespace gr
 		}
 	      }
 	  }
-	  
+
 	  std::string final_dec = decode_decision (decision);
-	  
-	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");;
-	  sigMF meta = sigMF ("cf32", "./", "1.1.0");;
-	  
-	  meta_msg.parse_string(pmt::symbol_to_string (pmt::tuple_ref (tuple, 0)), final_dec);
-	  
+
+	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");
+	  ;
+	  sigMF meta = sigMF ("cf32", "./", "1.1.0");
+	  ;
+
+	  meta_msg.parse_string (
+	      pmt::symbol_to_string (pmt::tuple_ref (tuple, 0)), final_dec);
+
 	  meta.parse_file (d_metafile);
-	  meta.add_annotation(meta_msg.get_annotation()[0]);
+	  meta.add_annotation (meta_msg.get_annotation ()[0]);
 	  //meta.add_capture(meta_msg.get_capture()[0]);
-	  
+
 	  /* Append output file */
 	  std::ofstream outfile;
 	  outfile.open (d_metafile, std::ios_base::in);
 	  outfile << meta.toJSON ();
 	  outfile.close ();
 
-	  
-	  message_port_pub (pmt::intern ("classification"),
-			    pmt::string_to_symbol (meta_msg.getRoot().toStyledString ()));
+	  message_port_pub (
+	      pmt::intern ("classification"),
+	      pmt::string_to_symbol (meta_msg.getRoot ().toStyledString ()));
 	  // Go catch the next tuple of the incoming vector message
 	  curr_sig++;
 	}
@@ -259,8 +335,14 @@ namespace gr
 	case GMSK:
 	  return "GMSK";
 	  break;
-	case QAM:
-	  return "QAM";
+	case QAM16:
+	  return "16QAM";
+	  break;
+	case PSK8:
+	  return "8PSK";
+	  break;
+	case QAM64:
+	  return "64QAM";
 	  break;
 	default:
 	  return "UNKNOWN";

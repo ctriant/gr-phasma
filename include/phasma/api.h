@@ -51,7 +51,26 @@ typedef enum
 
 typedef enum
 {
-  BPSK = 1, QPSK, AM, FM, FSK, GMSK, QAM, ASK, SPREAD_SPECTRUM,
+  BPSK = 1,
+  QPSK,
+  AM,
+  FM,
+  FSK,
+  GMSK,
+  OQPSK,
+  PSK8,
+  PSK16,
+  PSK32,
+  QAM16,
+  QAM32,
+  QAM64,
+  QAM128,
+  QAM256,
+  FSK2,
+  FSK4,
+  FKS8,
+  ASK,
+  SPREAD_SPECTRUM,
 } phasma_mod_type_t;
 
 #endif /* INCLUDED_PHASMA_API_H */
