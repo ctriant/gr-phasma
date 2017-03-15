@@ -999,7 +999,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1032, 548)</value>
+      <value>(952, 620)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1454,7 +1454,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1168, 548)</value>
+      <value>(1104, 620)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1584,7 +1584,7 @@
     </param>
     <param>
       <key>samples_per_symbol</key>
-      <value>64</value>
+      <value>32</value>
     </param>
     <param>
       <key>verbose</key>
@@ -1651,7 +1651,7 @@
     </param>
     <param>
       <key>samples_per_symbol</key>
-      <value>64</value>
+      <value>32</value>
     </param>
     <param>
       <key>verbose</key>
@@ -3310,7 +3310,7 @@
     </param>
     <param>
       <key>npredictors</key>
-      <value>64</value>
+      <value>512</value>
     </param>
     <param>
       <key>filename</key>
@@ -3384,19 +3384,23 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>True</value>
     </param>
     <param>
       <key>threshold_db</key>
-      <value>-80</value>
+      <value>-70</value>
     </param>
     <param>
       <key>threshold_margin_db</key>
-      <value>10</value>
+      <value>3</value>
+    </param>
+    <param>
+      <key>center_freq</key>
+      <value>3190e6</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(456, 460)</value>
+      <value>(472, 464)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3408,7 +3412,7 @@
     </param>
     <param>
       <key>ifft_size</key>
-      <value>ifft_size</value>
+      <value>64</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -3424,7 +3428,11 @@
     </param>
     <param>
       <key>sig_num</key>
-      <value>10</value>
+      <value>100</value>
+    </param>
+    <param>
+      <key>filename</key>
+      <value>/home/ctriant/output.json</value>
     </param>
     <param>
       <key>samp_rate</key>
@@ -3436,7 +3444,7 @@
     </param>
     <param>
       <key>silence_guardband</key>
-      <value>5</value>
+      <value>1e3</value>
     </param>
     <param>
       <key>taps</key>
@@ -3467,7 +3475,7 @@
     </param>
     <param>
       <key>fc</key>
-      <value>samp_rate/2</value>
+      <value>3195e6</value>
     </param>
     <param>
       <key>comment</key>

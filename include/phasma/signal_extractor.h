@@ -50,8 +50,8 @@ namespace gr
       static sptr
       make (float samp_rate, float channel_bw, size_t ifft_size,
 	    const std::vector<gr_complex> &taps, const float silence_guardband,
-	    float signal_duration, float min_sig_bw, float threshold_db,
-	    float threshold_margin_db, size_t sig_num);
+	    float center_freq, float signal_duration, float min_sig_bw, 
+	    float threshold_db, float threshold_margin_db, size_t sig_num);
     };
 
   } // namespace phasma

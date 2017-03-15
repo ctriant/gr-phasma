@@ -79,7 +79,6 @@ namespace gr
 	    d_status(true)
 
     {
-      std::cout << fft_size << std::endl;
       /* Process in a per-FFT basis */
       set_output_multiple (d_fft_size);
 

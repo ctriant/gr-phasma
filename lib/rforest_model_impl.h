@@ -64,7 +64,7 @@ namespace gr
       /**
        * Auxiliary buffer
        */
-      float* d_input;
+      gr_complex* d_input;
 
       std::vector<uint16_t> d_port_label;
 
