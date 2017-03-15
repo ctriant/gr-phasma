@@ -46,7 +46,8 @@ public:
 	 */
 	static sptr
 	make(const size_t classifier_type, size_t data_type, size_t npredictors,
-			const size_t nlabels, const std::string filename);
+			const size_t nlabels, const std::string filename,
+			const std::string metafile);
 	
 };
 

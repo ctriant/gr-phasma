@@ -7,23 +7,26 @@
 
 #include <phasma/utils/sigMF.h>
 #include <sstream>
-#include <json/json.h>
+#include <fstream>
+#include <stdio.h>
 
-sigMF::sigMF (std::string datatype, std::string datapath, std::string version,
-	      size_t capture_sample_start, size_t annotation_sample_start,
-	      size_t sample_count)
+sigMF::sigMF (std::string datatype, std::string datapath, std::string version)
 {
   d_datatype = datatype;
   d_datapath = datapath;
   d_version = version;
-  d_capture_sample_start = capture_sample_start;
-  d_annotation_samples_start = annotation_sample_start;
-  d_sample_count = sample_count;
+  d_capture_sample_start = 0;
+  d_annotation_samples_start = 0;
+  d_sample_count = 0;
   d_freq_upper_edge = 0;
   d_freq_lower_edge = 0;
   d_offset = 0;
   d_sample_rate = 0;
   d_frequency = 0;
+  
+  this->add_global();
+  this->add_capture(0, 10e6);
+  
 }
 
 sigMF::sigMF (std::string datatype, std::string datapath, std::string version,
@@ -45,6 +48,7 @@ sigMF::sigMF (std::string datatype, std::string datapath, std::string version,
   d_comment = comment;
   d_offset = 0;
   d_frequency = 0;
+
 }
 
 size_t
@@ -92,7 +96,7 @@ sigMF::getComment () const
 void
 sigMF::setComment (const std::string& comment)
 {
-  d_comment = comment;
+  d_root["annotations"][0]["core::comment"] = comment;
 }
 
 const std::string&
@@ -275,37 +279,117 @@ sigMF::setVersion (const std::string& version)
   d_version = version;
 }
 
+/* TODO: Modify parameters */
+void
+sigMF::add_global ()
+{
+  d_global["core:datapath"] = d_datapath;
+  d_global["core:datatype"] = d_datatype;
+  d_root["global"] = d_global;
+}
+
+void
+sigMF::add_capture (size_t sample_start, double sample_rate)
+{
+  Json::Value capture;
+  
+  d_capture_list = d_root["capture"];
+
+  capture["core:sample_start"] = sample_start;
+  capture["core:sample_rate"] = sample_rate;
+
+  d_capture_list.append (capture);
+  d_root["capture"] = d_capture_list;
+}
+
+void
+sigMF::add_capture (Json::Value capture)
+{
+  d_root["capture"].append (capture);
+}
+
+void
+sigMF::add_annotation (size_t samples_start, size_t sample_count,
+		       std::string comment, double freq_lower_edge,
+		       double freq_upper_edge, float decimation, 
+		       std::string time)
+{
+  Json::Value annotation;
+
+  d_annotation_list = d_root["annotations"];
+
+  annotation["core:sample_start"] = samples_start;
+  annotation["core:sample_count"] = sample_count;
+  annotation["core:freq_lower_edge"] = freq_lower_edge;
+  annotation["core:freq_upper_edge"] = freq_upper_edge;
+  annotation["core:decimation"] = decimation;
+  annotation["core:time"] = time;
+
+  d_annotation_list.append (annotation);
+  d_root["annotations"] = d_annotation_list;
+}
+
+void
+sigMF::add_annotation (Json::Value annotation)
+{
+  d_root["annotations"].append (annotation);
+}
+
+void
+sigMF::setRoot (Json::Value root)
+{
+  d_root = root;
+}
+
+Json::Value
+sigMF::getRoot ()
+{
+  return d_root;
+}
+
+Json::Value
+sigMF::get_annotation() {
+  return d_root["annotations"];
+}
+
+Json::Value
+sigMF::get_capture() {
+  return d_root["capture"];
+}
+
+void
+sigMF::parse_file (std::string json_sigmf)
+{
+  Json::Reader reader;
+  Json::Value tmp;
+  std::ifstream file(json_sigmf);
+  
+  bool success = reader.parse (file, tmp, false);
+  if (success) {
+    d_root = tmp;
+  }
+  
+}
+
+void
+sigMF::parse_string (std::string json_sigmf, std::string decision)
+{
+  Json::Reader reader;
+  Json::Value tmp;
+  
+  bool success = reader.parse (json_sigmf, tmp, false);
+  if (success) {
+    d_root = tmp;
+    d_root["annotations"][0]["core::comment"] = decision;
+  }
+  
+}
+
 std::string
 sigMF::toJSON ()
 {
   // TODO: Support all fields
-  Json::Value root;
-  Json::Value global;
-  Json::Value capture;
-  Json::Value capture_list (Json::arrayValue);
-  Json::Value annotation;
-
-  global["core:datapath"] = d_datapath;
-  global["core:datatype"] = d_datatype;
-
-  capture["core:sample_start"] = d_capture_sample_start;
-  capture["core:sample_rate"] = d_sample_rate;
-  capture["core:time"] = d_time;
-
-  capture_list.append (capture);
-
-  annotation["core:sample_start"] = d_annotation_samples_start;
-  annotation["core:sample_count"] = d_sample_count;
-  annotation["core:freq_lower_edge"] = d_freq_lower_edge;
-  annotation["core:freq_upper_edge"] = d_freq_upper_edge;
-  annotation["core:comment"] = d_comment;
-  annotation["span"] = d_freq_upper_edge - d_freq_lower_edge + 20e3;
-
-  root["global"] = global;
-  root["capture"] = capture_list;
-  root["annotation"] = annotation;
-
-  std::string json = root.toStyledString ();
+  std::string json = d_root.toStyledString ();
 
   return json;
 }

@@ -28,6 +28,7 @@
 #include <gnuradio/blocks/rotator.h>
 #include <gnuradio/blocks/rotator_cc.h>
 #include <string>
+#include <fstream>
 
 namespace gr
 {
@@ -47,6 +48,8 @@ namespace gr
 
       const float d_silence_guardband;
       size_t d_silence_guardband_samples;
+      
+      float d_center_freq;
 
       size_t d_channel_num;
       size_t d_fft_size;
@@ -85,9 +88,7 @@ namespace gr
 
       /* Vector that holds linear noise floor */
       float* d_noise_floor;
-
-      float d_center_freq;
-
+      
       void
       record_signal (const gr_complex* fft_in,
 		     std::vector<phasma_signal_t>* signals,
@@ -99,10 +100,12 @@ namespace gr
 			     size_t ifft_size,
 			     const std::vector<gr_complex> &taps,
 			     const float silence_guardband,
+			     float center_freq,
 			     float signal_duration,
 			     float min_sig_bw,
 			     float threshold_db,
-			     float threshold_margin_db, size_t sig_num);
+			     float threshold_margin_db, 
+			     size_t sig_num);
 
       ~signal_extractor_impl ();
 

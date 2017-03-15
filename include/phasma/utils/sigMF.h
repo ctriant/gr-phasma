@@ -9,6 +9,7 @@
 #define LIB_UTILS_SIGMF_H_
 
 #include <string>
+#include <json/json.h>
 
 class sigMF
 {
@@ -39,15 +40,20 @@ private:
   double d_freq_lower_edge;
   double d_freq_upper_edge;
 
+  /* JSON top-level objects */
+  Json::Value d_root;
+  Json::Value d_global;
+  Json::Value d_capture_list = Json::Value (Json::arrayValue);
+  Json::Value d_annotation_list = Json::Value (Json::arrayValue);
+
 public:
-  sigMF (std::string datatype, std::string datapath, std::string version,
-	 size_t capture_sample_start, size_t annotation_sample_start,
-	 size_t sample_count);
+  
+  sigMF (std::string datatype, std::string datapath, std::string version);
 
   sigMF (std::string datatype, std::string datapath, std::string version,
-  	 size_t capture_sample_start, double sample_rate, std::string time,
-	 size_t annotation_sample_start, size_t sample_count, double freq_lower_edge,
-	 double freq_upper_edge, std::string comment);
+	 size_t capture_sample_start, double sample_rate, std::string time,
+	 size_t annotation_sample_start, size_t sample_count,
+	 double freq_lower_edge, double freq_upper_edge, std::string comment);
 
   virtual
   ~sigMF ();
@@ -127,8 +133,42 @@ public:
   getVersion () const;
   void
   setVersion (const std::string& version);
+  void
+  add_global ();
+  void
+  add_capture (size_t sample_start, double sample_rate);
+  
+  void
+  add_capture (Json::Value capture);
+  
+  void
+  add_annotation (size_t samples_start, size_t sample_count,
+		  std::string comment, double freq_lower_edge,
+		  double freq_upper_edge, float decimation, std::string time);
+  void
+  add_annotation (Json::Value annotation);
+  
+  void
+  setRoot (Json::Value root);
+  
+  Json::Value
+  getRoot ();
+  
+  Json::Value
+  get_annotation();
+  
+  Json::Value
+  get_capture();
+
+  void
+  parse_file (std::string json_sigmf);
+  
+  void
+  parse_string (std::string json_sigmf, std::string decision);
+
+
   std::string
-  toJSON();
+  toJSON ();
 };
 
 #endif /* LIB_UTILS_SIGMF_H_ */
