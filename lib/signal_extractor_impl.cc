@@ -99,8 +99,7 @@ namespace gr
       message_port_register_out (mp ("out"));
 
       d_taps = taps;
-
-      d_tmp = new gr_complex[d_conseq_channel_num * d_ifft_size];
+      d_tmp = new gr_complex[d_fft_size];
 
       /* Calculation of Blackmann-Harris window */
       for (size_t j = 0; j < d_conseq_channel_num; j++) {
@@ -193,7 +192,7 @@ namespace gr
 	       */
 	      if (!sig_alarm) {
 		sig_alarm = true;
-		d_abs_signal_start = i;
+		d_abs_signal_start = i - d_silence_guardband_samples;
 		sig_slot_checkpoint = sig_slot_curr;
 	      }
 	    }
@@ -208,7 +207,7 @@ namespace gr
 		current_time_milliseconds = milliseconds (millisecs);
 		ptime curr_milliseconds (curr_microsecs.date (),
 					 current_time_milliseconds);
-		d_abs_signal_end = i - silence_count + 1;
+		d_abs_signal_end = i - d_silence_guardband_samples + 1;
 		sig_slot_curr = d_abs_signal_end / d_ifft_size;
 		if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps) {
 		  record_signal (in, &d_signals, sig_slot_checkpoint,
@@ -253,43 +252,40 @@ namespace gr
     {
       // Insert record in the signal vector.
       phasma_signal_t sig_rec;
-      size_t ifft_idx;
+      size_t decimation_idx;
       size_t span;
       size_t iq_size_bytes;
       float phase_inc;
       float center_freq_rel;
       std::vector<gr_complex> taps_new (d_taps.size ());
 
-      ifft_idx = curr_slot - sig_slot_checkpoint;
-      span = curr_slot - sig_slot_checkpoint + 1;
-      iq_size_bytes = span * d_ifft_size * sizeof(gr_complex);
+      decimation_idx = curr_slot - sig_slot_checkpoint;
+      span = decimation_idx + 1;
+      iq_size_bytes = (curr_slot - sig_slot_checkpoint) * d_ifft_size
+	  * sizeof(gr_complex);
 
       sig_rec.start_slot_idx = sig_slot_checkpoint;
       sig_rec.end_slot_idx = curr_slot;
       sig_rec.iq_samples = new gr_complex[iq_size_bytes];
 
       /* TODO: Mind the case of multiple available snapshots */
-      const gr_complex* sig_ptr = &in[sig_slot_checkpoint * d_ifft_size];
+      center_freq_rel = (((curr_slot * d_channel_bw
+	  + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2));
 
-//      d_center_freq = ((((d_abs_signal_end * d_channel_bw) / d_ifft_size)
-//	  + ((d_abs_signal_start * d_channel_bw) / d_ifft_size)) / 2)
-//	  - (d_samp_rate / 2);
-
-      center_freq_rel = -1
-	  * (((curr_slot * d_channel_bw + sig_slot_checkpoint * d_channel_bw)
-	      / 2) - (d_samp_rate / 2));
-
-      phase_inc = (2.0 * M_PI * center_freq_rel);
+      phase_inc = ((2.0 * M_PI * center_freq_rel) / d_samp_rate) * -1
+	  * (d_channel_num / span);
       for (size_t t = 0; t < d_taps.size (); t++) {
 	taps_new[t] = d_taps[t] * std::exp (gr_complex (0, t * phase_inc));
       }
-      d_rotator.set_phase_incr (
-	  exp (gr_complex (0, -1 * (d_channel_num / span) * phase_inc)));
 
-      d_filter[ifft_idx]->set_taps (taps_new);
-      d_rotator.rotateN (d_tmp, in, d_fft_size);
-      d_filter[ifft_idx]->filter (d_ifft_size * span, d_tmp,
-				  sig_rec.iq_samples);
+      d_filter[decimation_idx]->set_taps (taps_new);
+
+      d_rotator.set_phase_incr (exp (gr_complex (0, phase_inc)));
+
+      d_filter[decimation_idx]->filter (
+	  (curr_slot - sig_slot_checkpoint) * d_ifft_size, in, d_tmp);
+      d_rotator.rotateN (sig_rec.iq_samples, d_tmp,
+			 (curr_slot - sig_slot_checkpoint) * d_ifft_size);
 
       d_signals.push_back (sig_rec);
 
@@ -297,20 +293,20 @@ namespace gr
       sigMF meta_record = sigMF ("cf32", "./", "1.1.0");
 
       meta_record.add_capture (0, d_samp_rate);
-      meta_record.add_annotation (d_abs_signal_start,
-			   d_abs_signal_end - d_abs_signal_start, "",
-			   (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
-			   (curr_slot * d_channel_bw) + d_center_freq,
-			   d_channel_num / span,
-			   timestamp);
+      meta_record.add_annotation (
+	  d_abs_signal_start, d_abs_signal_end - d_abs_signal_start, "",
+	  (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
+	  (curr_slot * d_channel_bw) + d_center_freq, (d_channel_num / span),
+	  timestamp);
 
       pmt_t tup;
       tup = make_tuple (string_to_symbol (meta_record.toJSON ()),
 			make_blob (sig_rec.iq_samples, iq_size_bytes));
+
       d_msg_queue.push_back (tup);
 
       delete[] sig_rec.iq_samples;
-
+      memset (d_tmp, 0, d_fft_size);
     }
 
     void
