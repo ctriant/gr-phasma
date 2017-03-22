@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <block>
-	<name>Signal Extractor</name>
-	<key>phasma_signal_extractor</key>
+	<name>Signal Separator</name>
+	<key>phasma_signal_separator</key>
 	<category>[phasma]</category>
 	<import>import phasma</import>
-	<make>phasma.signal_extractor($samp_rate, $channel_bw, 
+	<make>phasma.signal_separator($samp_rate, $channel_bw, 
 		$ifft_size, $taps, $silence_guardband, $center_freq,
 		 $signal_duration, $min_sig_bw, $threshold_db, $threshold_margin_db, 
 		 $sig_num)

@@ -34,7 +34,7 @@ list(APPEND phasma_sources
     rforest_model_impl.cc
     eigenvalue_signal_detector_impl.cc
     opencv_predict_impl.cc
-    signal_extractor_impl.cc
+    signal_separator_impl.cc
     sigmf_debug_impl.cc
     )
 
