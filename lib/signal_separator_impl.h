@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_PHASMA_SIGNAL_EXTRACTOR_IMPL_H
-#define INCLUDED_PHASMA_SIGNAL_EXTRACTOR_IMPL_H
+#ifndef INCLUDED_PHASMA_SIGNAL_SEPARATOR_IMPL_H
+#define INCLUDED_PHASMA_SIGNAL_SEPARATOR_IMPL_H
 
-#include <phasma/signal_extractor.h>
+#include <phasma/signal_separator.h>
 #include <gnuradio/filter/api.h>
 #include <gnuradio/filter/fft_filter.h>
 #include <gnuradio/filter/fft_filter_ccc.h>
@@ -35,7 +35,7 @@ namespace gr
   namespace phasma
   {
 
-    class signal_extractor_impl : public signal_extractor
+    class signal_separator_impl : public signal_separator
     {
     private:
 
@@ -96,7 +96,7 @@ namespace gr
 		     std::string time);
 
     public:
-      signal_extractor_impl (float samp_rate, float channel_bw,
+      signal_separator_impl (float samp_rate, float channel_bw,
 			     size_t ifft_size,
 			     const std::vector<gr_complex> &taps,
 			     const float silence_guardband,
@@ -107,7 +107,7 @@ namespace gr
 			     float threshold_margin_db, 
 			     size_t sig_num);
 
-      ~signal_extractor_impl ();
+      ~signal_separator_impl ();
 
       void
       msg_handler_noise_floor (pmt::pmt_t msg);
@@ -121,5 +121,5 @@ namespace gr
   } // namespace phasma
 } // namespace gr
 
-#endif /* INCLUDED_PHASMA_SIGNAL_EXTRACTOR_IMPL_H */
+#endif /* INCLUDED_PHASMA_SIGNAL_SEPARATOR_IMPL_H */
 

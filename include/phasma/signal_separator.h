@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_PHASMA_SIGNAL_EXTRACTOR_H
-#define INCLUDED_PHASMA_SIGNAL_EXTRACTOR_H
+#ifndef INCLUDED_PHASMA_SIGNAL_SEPARATOR_H
+#define INCLUDED_PHASMA_SIGNAL_SEPARATOR_H
 
 #include <phasma/api.h>
 #include <gnuradio/sync_block.h>
@@ -34,17 +34,17 @@ namespace gr
      * \ingroup phasma
      *
      */
-    class PHASMA_API signal_extractor : virtual public gr::sync_block
+    class PHASMA_API signal_separator : virtual public gr::sync_block
     {
     public:
-      typedef boost::shared_ptr<signal_extractor> sptr;
+      typedef boost::shared_ptr<signal_separator> sptr;
 
       /*!
-       * \brief Return a shared_ptr to a new instance of phasma::signal_extractor.
+       * \brief Return a shared_ptr to a new instance of phasma::signal_separator.
        *
-       * To avoid accidental use of raw pointers, phasma::signal_extractor's
+       * To avoid accidental use of raw pointers, phasma::signal_separator's
        * constructor is in a private implementation
-       * class. phasma::signal_extractor::make is the public interface for
+       * class. phasma::signal_separator::make is the public interface for
        * creating new instances.
        */
       static sptr
@@ -57,5 +57,5 @@ namespace gr
   } // namespace phasma
 } // namespace gr
 
-#endif /* INCLUDED_PHASMA_SIGNAL_EXTRACTOR_H */
+#endif /* INCLUDED_PHASMA_SIGNAL_SEPARATOR_H */
 

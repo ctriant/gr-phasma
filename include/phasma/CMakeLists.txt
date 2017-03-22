@@ -27,7 +27,7 @@ install(FILES
     rforest_model.h
     eigenvalue_signal_detector.h 
     opencv_predict.h
-    signal_extractor.h
+    signal_separator.h
     sigmf_debug.h
     DESTINATION include/phasma
 )

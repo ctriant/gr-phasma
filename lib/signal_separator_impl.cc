@@ -27,7 +27,7 @@
 #include <volk/volk.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <phasma/utils/sigMF.h>
-#include "signal_extractor_impl.h"
+#include "signal_separator_impl.h"
 
 namespace gr
 {
@@ -38,8 +38,8 @@ namespace gr
     using namespace boost::posix_time;
     using namespace pmt;
 
-    signal_extractor::sptr
-    signal_extractor::make (float samp_rate, float channel_bw, size_t ifft_size,
+    signal_separator::sptr
+    signal_separator::make (float samp_rate, float channel_bw, size_t ifft_size,
 			    const std::vector<gr_complex> &taps,
 			    const float silence_guardband, float center_freq,
 			    float signal_duration, float min_sig_bw,
@@ -47,7 +47,7 @@ namespace gr
 			    size_t sig_num)
     {
       return gnuradio::get_initial_sptr (
-	  new signal_extractor_impl (samp_rate, channel_bw, ifft_size, taps,
+	  new signal_separator_impl (samp_rate, channel_bw, ifft_size, taps,
 				     silence_guardband, center_freq,
 				     signal_duration, min_sig_bw, threshold_db,
 				     threshold_margin_db, sig_num));
@@ -56,13 +56,13 @@ namespace gr
     /*
      * The private constructor
      */
-    signal_extractor_impl::signal_extractor_impl (
+    signal_separator_impl::signal_separator_impl (
 	float samp_rate, float channel_bw, size_t ifft_size,
 	const std::vector<gr_complex> &taps, const float silence_guardband,
 	float center_freq, float signal_duration, float min_sig_bw,
 	float threshold_db, float threshold_margin_db, size_t sig_num) :
 	    gr::sync_block (
-		"signal_extractor",
+		"signal_separator",
 		gr::io_signature::make2 (2, 2, sizeof(float),
 					 sizeof(gr_complex)),
 		gr::io_signature::make (0, 0, 0)),
@@ -93,7 +93,7 @@ namespace gr
       message_port_register_in (mp ("threshold_rcv"));
       set_msg_handler (
 	  mp ("threshold_rcv"),
-	  boost::bind (&signal_extractor_impl::msg_handler_noise_floor, this,
+	  boost::bind (&signal_separator_impl::msg_handler_noise_floor, this,
 		       _1));
 
       message_port_register_out (mp ("out"));
@@ -131,7 +131,7 @@ namespace gr
     /*
      * Our virtual destructor.
      */
-    signal_extractor_impl::~signal_extractor_impl ()
+    signal_separator_impl::~signal_separator_impl ()
     {
       for (size_t i = 0; i < d_conseq_channel_num; i++) {
 	delete d_filter[i];
@@ -143,7 +143,7 @@ namespace gr
     }
 
     int
-    signal_extractor_impl::work (int noutput_items,
+    signal_separator_impl::work (int noutput_items,
 				 gr_vector_const_void_star &input_items,
 				 gr_vector_void_star &output_items)
     {
@@ -244,7 +244,7 @@ namespace gr
     }
 
     void
-    signal_extractor_impl::record_signal (const gr_complex* in,
+    signal_separator_impl::record_signal (const gr_complex* in,
 					  std::vector<phasma_signal_t>* signals,
 					  size_t sig_slot_checkpoint,
 					  size_t curr_slot,
@@ -310,7 +310,7 @@ namespace gr
     }
 
     void
-    signal_extractor_impl::msg_handler_noise_floor (pmt_t msg)
+    signal_separator_impl::msg_handler_noise_floor (pmt_t msg)
     {
       PHASMA_LOG_INFO("Signal extractor received estimated noise-floor");
       memcpy (d_noise_floor, blob_data (msg), blob_length (msg));
