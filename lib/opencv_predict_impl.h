@@ -24,6 +24,7 @@
 #include <phasma/api.h>
 #include <phasma/log.h>
 #include <phasma/opencv_predict.h>
+#include <phasma/featuresets/dummy_featureset.h>
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
@@ -51,6 +52,8 @@ private:
 
 	const std::string d_filename;
 	
+	featureset::dummy_featureset* d_featurset;
+
 	boost::shared_ptr<boost::thread> d_trigger_thread;
 	
 	Json::Value d_root;
