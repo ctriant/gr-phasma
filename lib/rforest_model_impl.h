@@ -22,6 +22,7 @@
 #define INCLUDED_PHASMA_RFOREST_MODEL_IMPL_H
 
 #include <phasma/rforest_model.h>
+#include <phasma/featuresets/dummy_featureset.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/fft/window.h>
 #include <opencv2/ml.hpp>
@@ -61,6 +62,8 @@ namespace gr
        */
       cv::Ptr<cv::ml::RTrees> d_rfmodel;
 
+      featureset::dummy_featureset* d_featurset;
+
       /**
        * Auxiliary buffer
        */
@@ -70,6 +73,9 @@ namespace gr
 
       void
       bind_port_label(const std::vector<uint16_t> &labels);
+
+      void
+      print_opencv_mat(cv::Mat* mat);
 
     public:
       rforest_model_impl (const size_t npredictors, const size_t nobservations,

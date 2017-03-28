@@ -13,6 +13,7 @@
 #include "phasma/opencv_predict.h"
 #include "phasma/signal_separator.h"
 #include "phasma/sigmf_debug.h"
+#include "phasma/featuresets/dummy_featureset.h"
 %}
 
 
@@ -28,3 +29,4 @@ GR_SWIG_BLOCK_MAGIC2(phasma, signal_separator);
 %include "phasma/sigmf_debug.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, sigmf_debug);
 
+%include "phasma/featuresets/dummy_featureset.h"
