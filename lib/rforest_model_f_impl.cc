@@ -25,15 +25,15 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <phasma/log.h>
-#include "rforest_model_impl.h"
+#include "rforest_model_f_impl.h"
 
 namespace gr
 {
   namespace phasma
   {
 
-    rforest_model::sptr
-    rforest_model::make (const size_t npredictors, const size_t nobservations,
+    rforest_model_f::sptr
+    rforest_model_f::make (const size_t npredictors, const size_t nobservations,
 			 size_t ninport, const std::vector<uint16_t> &labels,
 			 const size_t max_depth, const size_t min_sample_count,
 			 const size_t regression_accu,
@@ -44,7 +44,7 @@ namespace gr
 			 const std::string filename)
     {
       return gnuradio::get_initial_sptr (
-	  new rforest_model_impl (npredictors, nobservations, ninport, labels,
+	  new rforest_model_f_impl (npredictors, nobservations, ninport, labels,
 				  max_depth, min_sample_count, regression_accu,
 				  use_surrogates, max_categories,
 				  calc_var_importance, active_var_count,
@@ -54,7 +54,7 @@ namespace gr
     /*
      * The private constructor
      */
-    rforest_model_impl::rforest_model_impl (const size_t npredictors,
+    rforest_model_f_impl::rforest_model_f_impl (const size_t npredictors,
 					    const size_t nobservations,
 					    const size_t ninport,
 					    const std::vector<uint16_t> &labels,
@@ -68,8 +68,8 @@ namespace gr
 					    const size_t max_iter,
 					    const std::string filename) :
 	    gr::sync_block (
-		"rforest_model",
-		gr::io_signature::make (1, ninport, sizeof(gr_complex)),
+		"rforest_model_f",
+		gr::io_signature::make (1, ninport, sizeof(float)),
 		gr::io_signature::make (0, 0, 0)),
 	    d_npredictors (npredictors),
 	    d_nobservations (nobservations),
@@ -87,16 +87,16 @@ namespace gr
 	    d_port_label (d_ninport)
     {
       set_output_multiple (100 * d_npredictors);
-      d_input = (gr_complex*) malloc (d_npredictors * sizeof(gr_complex));
+      d_input = (float*) malloc (d_npredictors * sizeof(float));
       d_rfmodel = cv::ml::RTrees::create ();
-      d_featurset = new featureset::dummy_featureset(d_npredictors);
+      d_featurset = new featureset::raw_iq_featureset(d_npredictors);
       bind_port_label (labels);
     }
 
     /*
      * Our virtual destructor.
      */
-    rforest_model_impl::~rforest_model_impl ()
+    rforest_model_f_impl::~rforest_model_f_impl ()
     {
 
     }
@@ -118,11 +118,11 @@ namespace gr
     }
 
     int
-    rforest_model_impl::work (int noutput_items,
+    rforest_model_f_impl::work (int noutput_items,
 			      gr_vector_const_void_star &input_items,
 			      gr_vector_void_star &output_items)
     {
-      const gr_complex *in;
+      const float *in;
       size_t available_observations = noutput_items / d_npredictors;
 
       if (d_nobservations % d_ninport) {
@@ -133,9 +133,9 @@ namespace gr
       for (size_t i = 0; i < available_observations; i++) {
 	for (size_t n = 0; n < d_ninport; n++) {
 
-	  in = (const gr_complex*) input_items[n];
+	  in = (const float*) input_items[n];
 	  memcpy (d_input, &in[i * d_npredictors],
-		  d_npredictors * sizeof(gr_complex));
+		  d_npredictors * sizeof(float));
 
 	  d_featurset->generate(d_input);
 
@@ -202,13 +202,13 @@ namespace gr
     }
 
     void
-    rforest_model_impl::bind_port_label (const std::vector<uint16_t> &labels)
+    rforest_model_f_impl::bind_port_label (const std::vector<uint16_t> &labels)
     {
       d_port_label = labels;
     }
 
     void
-    rforest_model_impl::print_opencv_mat (cv::Mat* mat)
+    rforest_model_f_impl::print_opencv_mat (cv::Mat* mat)
     {
       for (size_t idr = 0; idr < (size_t)mat->rows; idr++) {
 	for (size_t idc = 0; idc < (size_t)mat->cols; idc++) {

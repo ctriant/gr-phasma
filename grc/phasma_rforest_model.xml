@@ -4,7 +4,7 @@
 	<key>phasma_rforest_model</key>
 	<category>[phasma]</category>
 	<import>import phasma</import>
-	<make>phasma.rforest_model($npredictors,
+	<make>phasma.rforest_model_$(type.fcn)($npredictors,
 		$nobservations,
 		$ninport,
 		$labels,
@@ -20,7 +20,23 @@
 	</make>
 	
 	<callback>bind_port_label(labels)</callback>
-
+	
+	<param>
+		<name>IO Type</name>
+		<key>type</key>
+		<type>enum</type>
+		<option>
+			<name>Complex</name>
+			<key>complex</key>
+			<opt>fcn:c</opt>
+		</option>
+		<option>
+			<name>Float</name>
+			<key>float</key>
+			<opt>fcn:f</opt>
+		</option>
+	</param>
+	
 	<param>
 		<name>Predictors number</name>
 		<key>npredictors</key>
@@ -126,7 +142,7 @@
 
 	<sink>
 		<name>in</name>
-		<type>complex</type>
+		<type>$type</type>
 		<nports>$ninport</nports>
 	</sink>
 

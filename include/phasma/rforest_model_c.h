@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_PHASMA_RFOREST_MODEL_H
-#define INCLUDED_PHASMA_RFOREST_MODEL_H
+#ifndef INCLUDED_PHASMA_RFOREST_MODEL_C_H
+#define INCLUDED_PHASMA_RFOREST_MODEL_C_H
 
 #include <phasma/api.h>
 #include <gnuradio/sync_block.h>
@@ -34,17 +34,17 @@ namespace gr
      * \ingroup phasma
      *
      */
-    class PHASMA_API rforest_model : virtual public gr::sync_block
+    class PHASMA_API rforest_model_c : virtual public gr::sync_block
     {
     public:
-      typedef boost::shared_ptr<rforest_model> sptr;
+      typedef boost::shared_ptr<rforest_model_c> sptr;
 
       /*!
-       * \brief Return a shared_ptr to a new instance of phasma::rforest_model.
+       * \brief Return a shared_ptr to a new instance of phasma::rforest_model_c.
        *
-       * To avoid accidental use of raw pointers, phasma::rforest_model's
+       * To avoid accidental use of raw pointers, phasma::rforest_model_c's
        * constructor is in a private implementation
-       * class. phasma::rforest_model::make is the public interface for
+       * class. phasma::rforest_model_c::make is the public interface for
        * creating new instances.
        */
       static sptr
@@ -60,5 +60,5 @@ namespace gr
   } // namespace phasma
 } // namespace gr
 
-#endif /* INCLUDED_PHASMA_RFOREST_MODEL_H */
+#endif /* INCLUDED_PHASMA_RFOREST_MODEL_C_H */
 

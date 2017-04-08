@@ -24,7 +24,8 @@ install(FILES
     utils/sigMF.h
     api.h
     log.h
-    rforest_model.h
+    rforest_model_c.h
+    rforest_model_f.h
     eigenvalue_signal_detector.h 
     opencv_predict.h
     signal_separator.h
