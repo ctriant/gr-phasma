@@ -36,7 +36,8 @@ list(APPEND phasma_sources
     opencv_predict_impl.cc
     signal_separator_impl.cc
     sigmf_debug_impl.cc
-    featuresets/dummy_featureset.cc )
+    featuresets/dummy_featureset.cc
+    featuresets/raw_iq_featureset.cc )
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
 if(NOT phasma_sources)
