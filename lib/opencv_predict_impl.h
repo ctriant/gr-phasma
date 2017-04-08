@@ -25,6 +25,7 @@
 #include <phasma/log.h>
 #include <phasma/opencv_predict.h>
 #include <phasma/featuresets/dummy_featureset.h>
+#include <phasma/featuresets/raw_iq_featureset.h>
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
@@ -59,6 +60,9 @@ private:
 	Json::Value d_root;
 	
 	const std::string d_metafile;
+
+	void
+	print_opencv_mat(cv::Mat* mat);
 
 	std::string
 	decode_decision(int decision);

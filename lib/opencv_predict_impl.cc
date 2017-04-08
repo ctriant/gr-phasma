@@ -160,11 +160,17 @@ namespace gr
 	  available_observations = 1;
 	  for (size_t i = 0; i < available_observations; i++) {
 	    /* Insert new dataset row */
-	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32F, d_featurset->get_outbuf());
+	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
 	    d_labels.at<float> (0, 0) = 0;
+
 	    d_data = cv::ml::TrainData::create (d_predictors,
 						cv::ml::ROW_SAMPLE, d_labels);
-	    d_data->setTrainTestSplitRatio (0);
+
+	    cv::Mat train_samples = d_data->getTrainSamples();
+
+	    PHASMA_DEBUG("Test samples:");
+	    print_opencv_mat(&train_samples);
+
 
 	    cv::Mat predict_labels;
 	    switch (d_classifier_type)
@@ -173,7 +179,9 @@ namespace gr
 		{
 		  decision =
 		      reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
-			  d_data->getSamples (), predict_labels);
+			  d_data->getSamples(), cv::noArray(), cv::ml::DTrees::PREDICT_MAX_VOTE);
+		  PHASMA_LOG_INFO("Train error: %f\n",
+				  d_model->calcError (d_data, false, cv::noArray ()));
 		  break;
 		}
 	      default:
@@ -183,12 +191,11 @@ namespace gr
 	      }
 	  }
 
-	  std::string final_dec = decode_decision (decision);
+//	  std::string final_dec = decode_decision (decision);
+	  std::string final_dec = std::to_string(decision);
 
 	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");
-	  ;
 	  sigMF meta = sigMF ("cf32", "./", "1.1.0");
-	  ;
 
 	  meta_msg.parse_string (
 	      pmt::symbol_to_string (pmt::tuple_ref (tuple, 0)), final_dec);
@@ -213,6 +220,17 @@ namespace gr
 	  /* You are out of range so break */
 	  curr_sig = 0;
 	}
+      }
+    }
+
+    void
+    opencv_predict_impl::print_opencv_mat (cv::Mat* mat)
+    {
+      for (size_t idr = 0; idr < (size_t)mat->rows; idr++) {
+	for (size_t idc = 0; idc < (size_t)mat->cols; idc++) {
+	  printf ("%f ", mat->at<float> (idr, idc));
+	}
+	printf ("\n");
       }
     }
 

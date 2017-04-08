@@ -29,5 +29,6 @@ install(FILES
     opencv_predict.h
     signal_separator.h
     sigmf_debug.h
-    featuresets/dummy_featureset.h DESTINATION include/phasma
+    featuresets/dummy_featureset.h
+    featuresets/raw_iq_featureset.h DESTINATION include/phasma
 )

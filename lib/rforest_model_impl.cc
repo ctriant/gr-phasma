@@ -141,11 +141,11 @@ namespace gr
 
 	  /* Insert new dataset row */
 	  if (d_predictors.empty () && d_labels.empty ()) {
-	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32F, d_featurset->get_outbuf());
+	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
 	    d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
 	  }
 	  else {
-	    cv::vconcat (cv::Mat (1, d_featurset->get_features_num(), CV_32F, d_featurset->get_outbuf()), d_predictors,
+	    cv::vconcat (cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf()), d_predictors,
 			 d_predictors);
 	    cv::vconcat (cv::Mat (1, 1, CV_32F, d_port_label[n]), d_labels,
 			 d_labels);
@@ -169,11 +169,12 @@ namespace gr
 
 	    cv::Mat test_samples = d_train_data->getTestSamples();
 	    cv::Mat train_samples = d_train_data->getTrainSamples();
+	    cv::Mat test_labels = d_train_data->getTestResponses();
 
-//	    PHASMA_DEBUG("Test samples:");
-//	    print_opencv_mat(&test_samples);
-//	    PHASMA_DEBUG("Train samples:");
-//	    print_opencv_mat(&train_samples);
+	    PHASMA_DEBUG("Test samples:");
+	    print_opencv_mat(&test_samples);
+	    PHASMA_DEBUG("Test responses:");
+	    print_opencv_mat(&test_labels);
 
 	    PHASMA_LOG_INFO("Test/Train: %d/%d\n",
 			    d_train_data->getNTestSamples (),
@@ -182,14 +183,14 @@ namespace gr
 	    PHASMA_LOG_INFO("====== Random Forest training =====\n");
 	    d_rfmodel->setMaxDepth (d_max_depth);
 	    d_rfmodel->setMinSampleCount (d_min_sample_count);
-	    d_rfmodel->setRegressionAccuracy (d_regression_accu);
+	    d_rfmodel->setRegressionAccuracy (0.01);
 	    d_rfmodel->setUseSurrogates (d_use_surrogates);
 	    d_rfmodel->setMaxCategories (d_max_categories);
 	    d_rfmodel->setPriors (cv::Mat ());
 	    d_rfmodel->setCalculateVarImportance (d_calc_var_importance);
 	    d_rfmodel->setActiveVarCount (d_active_var_count);
 	    d_rfmodel->setTermCriteria (
-		cv::TermCriteria (cv::TermCriteria::MAX_ITER, d_max_iter, 0));
+		cv::TermCriteria (cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, d_max_iter, 0.1));
 	    train_and_print_errs (d_rfmodel, d_train_data);
 	    d_rfmodel->save (d_filename);
 	    PHASMA_LOG_INFO("====== Model exported as xml =====\n");
