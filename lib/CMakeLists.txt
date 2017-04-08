@@ -31,7 +31,8 @@ link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 list(APPEND phasma_sources
     utils/sigMF.cc
-    rforest_model_impl.cc
+    rforest_model_c_impl.cc
+    rforest_model_f_impl.cc
     eigenvalue_signal_detector_impl.cc
     opencv_predict_impl.cc
     signal_separator_impl.cc

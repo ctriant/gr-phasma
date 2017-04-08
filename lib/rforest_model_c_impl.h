@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_PHASMA_RFOREST_MODEL_IMPL_H
-#define INCLUDED_PHASMA_RFOREST_MODEL_IMPL_H
+#ifndef INCLUDED_PHASMA_RFOREST_MODEL_C_IMPL_H
+#define INCLUDED_PHASMA_RFOREST_MODEL_C_IMPL_H
 
-#include <phasma/rforest_model.h>
+#include <phasma/rforest_model_c.h>
 #include <phasma/featuresets/dummy_featureset.h>
 #include <phasma/featuresets/raw_iq_featureset.h>
 #include <gnuradio/fft/fft.h>
@@ -34,7 +34,7 @@ namespace gr
   namespace phasma
   {
 
-    class rforest_model_impl : public rforest_model
+    class rforest_model_c_impl : public rforest_model_c
     {
     private:
 
@@ -79,7 +79,7 @@ namespace gr
       print_opencv_mat(cv::Mat* mat);
 
     public:
-      rforest_model_impl (const size_t npredictors, const size_t nobservations,
+      rforest_model_c_impl (const size_t npredictors, const size_t nobservations,
 			  const size_t ninport, const std::vector<uint16_t> &labels,
 			  const size_t max_depth,
 			  const size_t min_sample_count,
@@ -90,7 +90,7 @@ namespace gr
 			  const size_t active_var_count, const size_t max_iter,
 			  const std::string filename);
 
-      ~rforest_model_impl ();
+      ~rforest_model_c_impl ();
 
       // Where all the action really happens
       int
@@ -101,5 +101,5 @@ namespace gr
   } // namespace phasma
 } // namespace gr
 
-#endif /* INCLUDED_PHASMA_RFOREST_MODEL_IMPL_H */
+#endif /* INCLUDED_PHASMA_RFOREST_MODEL_C_IMPL_H */
 

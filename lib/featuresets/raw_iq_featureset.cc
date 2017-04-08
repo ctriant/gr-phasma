@@ -36,7 +36,7 @@ namespace gr
 	      d_samples_num (samples_num),
 	      d_features_num (d_samples_num)
       {
-	d_outbuf = new gr_complex[d_features_num];
+	d_outbuf = new float[d_features_num];
       }
 
       raw_iq_featureset::~raw_iq_featureset ()
@@ -45,9 +45,9 @@ namespace gr
       }
 
       void
-      raw_iq_featureset::generate (const gr_complex* in)
+      raw_iq_featureset::generate (const float* in)
       {
-	memcpy (d_outbuf, in, d_features_num * sizeof(gr_complex));
+	memcpy (d_outbuf, in, d_features_num * sizeof(float));
       }
 
       size_t
@@ -56,7 +56,7 @@ namespace gr
 	return d_features_num;
       }
 
-      gr_complex*
+      float*
       raw_iq_featureset::get_outbuf () const
       {
 	return d_outbuf;

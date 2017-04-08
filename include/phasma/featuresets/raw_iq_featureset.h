@@ -42,17 +42,17 @@ namespace gr
 	~raw_iq_featureset ();
 
 	void
-	generate (const gr_complex* in);
+	generate (const float* in);
 
 	size_t
 	get_features_num () const;
 
-	gr_complex*
+	float*
 	get_outbuf () const;
 
       private:
 
-	gr_complex* d_outbuf;
+	float* d_outbuf;
 
 	size_t d_samples_num;
 	size_t d_features_num;
