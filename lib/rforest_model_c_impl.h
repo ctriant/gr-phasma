@@ -24,6 +24,7 @@
 #include <phasma/rforest_model_c.h>
 #include <phasma/featuresets/dummy_featureset.h>
 #include <phasma/featuresets/raw_iq_featureset.h>
+#include <phasma/featuresets/jaga.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/fft/window.h>
 #include <opencv2/ml.hpp>
@@ -63,7 +64,7 @@ namespace gr
        */
       cv::Ptr<cv::ml::RTrees> d_rfmodel;
 
-      featureset::dummy_featureset* d_featurset;
+      featureset::jaga* d_featurset;
 
       /**
        * Auxiliary buffer

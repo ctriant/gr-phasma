@@ -90,7 +90,7 @@ namespace gr
 	PHASMA_ERROR("Could not read the classifier ", d_filename);
       }
 
-      d_featurset = new featureset::dummy_featureset(d_npredictors);
+      d_featurset = new featureset::jaga (d_npredictors);
 
       /*  */
       d_trigger_thread = boost::shared_ptr<boost::thread> (
@@ -115,7 +115,7 @@ namespace gr
       size_t available_samples = 0;
       size_t available_observations = 0;
       void* data;
-      int decision;
+      float decision;
 
       double sum;
       double mean;
@@ -143,7 +143,7 @@ namespace gr
 		    pmt::tuple_ref (tuple, 1));
 		available_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 		    / sizeof(gr_complex);
-		d_featurset->generate((gr_complex*)data);
+		d_featurset->generate ((gr_complex*) data);
 	      }
 	      break;
 	    case FLOAT:
@@ -160,17 +160,14 @@ namespace gr
 	  available_observations = 1;
 	  for (size_t i = 0; i < available_observations; i++) {
 	    /* Insert new dataset row */
-	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
+	    d_predictors = cv::Mat (1, d_featurset->get_features_num (),
+				    CV_32FC1, d_featurset->get_outbuf ());
 	    d_labels.at<float> (0, 0) = 0;
 
 	    d_data = cv::ml::TrainData::create (d_predictors,
 						cv::ml::ROW_SAMPLE, d_labels);
 
-	    cv::Mat train_samples = d_data->getTrainSamples();
-
-	    PHASMA_DEBUG("Test samples:");
-	    print_opencv_mat(&train_samples);
-
+	    cv::Mat train_samples = d_data->getTrainSamples ();
 
 	    cv::Mat predict_labels;
 	    switch (d_classifier_type)
@@ -179,9 +176,7 @@ namespace gr
 		{
 		  decision =
 		      reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
-			  d_data->getSamples(), cv::noArray(), cv::ml::DTrees::PREDICT_MAX_VOTE);
-		  PHASMA_LOG_INFO("Train error: %f\n",
-				  d_model->calcError (d_data, false, cv::noArray ()));
+			  d_predictors, predict_labels);
 		  break;
 		}
 	      default:
@@ -192,7 +187,7 @@ namespace gr
 	  }
 
 //	  std::string final_dec = decode_decision (decision);
-	  std::string final_dec = std::to_string(decision);
+	  std::string final_dec = std::to_string (decision);
 
 	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");
 	  sigMF meta = sigMF ("cf32", "./", "1.1.0");
@@ -226,8 +221,8 @@ namespace gr
     void
     opencv_predict_impl::print_opencv_mat (cv::Mat* mat)
     {
-      for (size_t idr = 0; idr < (size_t)mat->rows; idr++) {
-	for (size_t idc = 0; idc < (size_t)mat->cols; idc++) {
+      for (size_t idr = 0; idr < (size_t) mat->rows; idr++) {
+	for (size_t idc = 0; idc < (size_t) mat->cols; idc++) {
 	  printf ("%f ", mat->at<float> (idr, idc));
 	}
 	printf ("\n");

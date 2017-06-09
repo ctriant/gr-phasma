@@ -89,7 +89,7 @@ namespace gr
       set_output_multiple (100 * d_npredictors);
       d_input = (gr_complex*) malloc (d_npredictors * sizeof(gr_complex));
       d_rfmodel = cv::ml::RTrees::create ();
-      d_featurset = new featureset::dummy_featureset(d_npredictors);
+      d_featurset = new featureset::jaga(d_npredictors);
       bind_port_label (labels);
     }
 
@@ -137,10 +137,11 @@ namespace gr
 	  memcpy (d_input, &in[i * d_npredictors],
 		  d_npredictors * sizeof(gr_complex));
 
-	  d_featurset->generate(d_input);
+	  d_featurset->generate((const gr_complex*)d_input);
 
 	  /* Insert new dataset row */
 	  if (d_predictors.empty () && d_labels.empty ()) {
+	    std::cout << "hey" << std::endl;
 	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
 	    d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
 	  }
@@ -151,7 +152,7 @@ namespace gr
 			 d_labels);
 	  }
 	  d_remaining--;
-
+	  PHASMA_LOG_INFO("Sample: %f %f %f\n", d_predictors.at<float>(i,0), d_predictors.at<float>(i,1), d_labels.at<float>(0));
 	  if (d_remaining == 0) {
 	    // TODO: Train model
 	    PHASMA_LOG_INFO("====== Dataset creation =====\n");
@@ -164,17 +165,18 @@ namespace gr
 						      cv::noArray (),
 						      cv::noArray (),
 						      var_types);
-	    d_train_data->shuffleTrainTest();
-	    d_train_data->setTrainTestSplitRatio (0.85);
+//	    d_train_data->shuffleTrainTest();
+	    d_train_data->setTrainTestSplitRatio (0.95);
 
-	    cv::Mat test_samples = d_train_data->getTestSamples();
-	    cv::Mat train_samples = d_train_data->getTrainSamples();
-	    cv::Mat test_labels = d_train_data->getTestResponses();
-
-	    PHASMA_DEBUG("Test samples:");
-	    print_opencv_mat(&test_samples);
-	    PHASMA_DEBUG("Test responses:");
-	    print_opencv_mat(&test_labels);
+//	    cv::Mat test_samples = d_train_data->getTestSamples();
+//	    cv::Mat train_samples = d_train_data->getTrainSamples();
+//	    cv::Mat test_labels = d_train_data->getResponses();
+//	    cv::Mat samples = d_train_data->getSamples();
+//
+//	    PHASMA_DEBUG("Test samples:");
+//	    print_opencv_mat(&samples);
+//	    PHASMA_DEBUG("Test responses:");
+//	    print_opencv_mat(&test_labels);
 
 	    PHASMA_LOG_INFO("Test/Train: %d/%d\n",
 			    d_train_data->getNTestSamples (),

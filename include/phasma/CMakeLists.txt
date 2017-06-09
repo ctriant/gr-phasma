@@ -31,5 +31,6 @@ install(FILES
     signal_separator.h
     sigmf_debug.h
     featuresets/dummy_featureset.h
-    featuresets/raw_iq_featureset.h DESTINATION include/phasma
+    featuresets/raw_iq_featureset.h 
+    featuresets/jaga.h DESTINATION include/phasma
 )

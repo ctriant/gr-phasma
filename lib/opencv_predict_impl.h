@@ -26,6 +26,7 @@
 #include <phasma/opencv_predict.h>
 #include <phasma/featuresets/dummy_featureset.h>
 #include <phasma/featuresets/raw_iq_featureset.h>
+#include <phasma/featuresets/jaga.h>
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
@@ -53,7 +54,7 @@ private:
 
 	const std::string d_filename;
 	
-	featureset::dummy_featureset* d_featurset;
+	featureset::jaga* d_featurset;
 
 	boost::shared_ptr<boost::thread> d_trigger_thread;
 	

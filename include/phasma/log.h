@@ -13,8 +13,8 @@
 #include <string.h>
 #include <sys/syscall.h>
 
-#define PHASMA_MESSAGES 0
-#define PHASMA_DEBUG_MESSAGES 0
+#define PHASMA_MESSAGES 1
+#define PHASMA_DEBUG_MESSAGES 1
 
 #if PHASMA_MESSAGES
 #define PHASMA_LOG_CLASS_INFO(CLASS_DEBUG_ENABLE, M, ...) 				\
