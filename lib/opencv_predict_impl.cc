@@ -186,8 +186,8 @@ namespace gr
 	      }
 	  }
 
-//	  std::string final_dec = decode_decision (decision);
-	  std::string final_dec = std::to_string (decision);
+	  std::string final_dec = decode_decision (decision);
+//	  std::string final_dec = std::to_string (decision);
 
 	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");
 	  sigMF meta = sigMF ("cf32", "./", "1.1.0");
@@ -242,6 +242,9 @@ namespace gr
 	  break;
 	case GMSK:
 	  return "GMSK";
+	  break;
+	case GFSK:
+	  return "GFSK";
 	  break;
 	case QAM16:
 	  return "16QAM";
