@@ -51,12 +51,13 @@ typedef enum
 
 typedef enum
 {
-  BPSK = 1,
+  BPSK = 0,
   QPSK,
+  GFSK,
+  GMSK,
   AM,
   FM,
   FSK,
-  GMSK,
   OQPSK,
   PSK8,
   PSK16,
