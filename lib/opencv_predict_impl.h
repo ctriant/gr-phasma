@@ -39,8 +39,12 @@ class opencv_predict_impl: public opencv_predict {
 private:
 	size_t d_npredictors;
 	size_t d_nlabels;
+	const size_t d_history_size;
+	size_t d_debug_mode;
+	size_t d_active_mod;
 	size_t d_classifier_type;
 	size_t d_data_type;
+
 
 	gr_complex* d_input;
 	float* d_input_re;
@@ -70,12 +74,19 @@ private:
 
 public:
 	opencv_predict_impl(const size_t classifier_type, const size_t data_type,
-			const size_t npredictors, const size_t nlabels, 
+			const size_t npredictors, const size_t nlabels, const size_t history_size,
+			bool debug_mode, size_t active_mod,
 			const std::string filename, const std::string metafile);
 	~opencv_predict_impl();
 
 	void 
 	msg_handler_trigger();
+
+	bool
+	stop();
+
+	void
+	set_active_mod (size_t active_mod);
 };
 
 } // namespace phasma

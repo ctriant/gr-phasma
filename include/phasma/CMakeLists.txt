@@ -32,5 +32,6 @@ install(FILES
     sigmf_debug.h
     featuresets/dummy_featureset.h
     featuresets/raw_iq_featureset.h 
-    featuresets/jaga.h DESTINATION include/phasma
+    featuresets/jaga.h
+    classifier.h DESTINATION include/phasma
 )

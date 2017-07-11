@@ -1,17 +1,22 @@
 <?xml version="1.0"?>
 <block>
-  <name>OpenCV Classifier</name>
-  <key>phasma_opencv_predict</key>
-  <category>[phasma]</category>
-  <import>import phasma</import>
-  <make>phasma.opencv_predict($classifier_type,
-  							  $data_type,
-			   				  $npredictors,
-			   				  $nlabels,
-			   				  $filename,
-			   				  $metafile)</make>
-			   				  
-			   				  
+	<name>OpenCV Classifier</name>
+	<key>phasma_opencv_predict</key>
+	<category>[phasma]</category>
+	<import>import phasma</import>
+	<make>phasma.opencv_predict($classifier_type,
+		$data_type,
+		$npredictors,
+		$nlabels,
+		$history_size,
+		$debug_mode,
+		$active_mod,
+		$filename,
+		$metafile)
+self.$(id).set_active_mod($active_mod)
+	</make>
+	<callback>set_active_mod($active_mod)</callback>
+
 	<param>
 		<name>Classification Method</name>
 		<key>classifier_type</key>
@@ -35,39 +40,67 @@
 			<key>1</key>
 		</option>
 	</param>
-	
+
 	<param>
 		<name>Predictors number</name>
 		<key>npredictors</key>
 		<type>int</type>
 	</param>
-	
+
 	<param>
 		<name>Expected labels number</name>
 		<key>nlabels</key>
 		<type>int</type>
 	</param>
-	
+
 	<param>
 		<name>Trained Model</name>
 		<key>filename</key>
 		<type>file_save</type>
 	</param>
-	
+
 	<param>
 		<name>Metafile</name>
 		<key>metafile</key>
 		<type>file_save</type>
 	</param>
+
+	<param>
+		<name>Debug Mode:</name>
+		<key>debug_mode</key>
+		<type>bool</type>
+		<option>
+			<name>Off</name>
+			<key>False</key>
+		</option>
+		<option>
+			<name>On</name>
+			<key>True</key>
+		</option>
+	</param>
+
+	<param>
+		<name>Active Modulation</name>
+		<key>active_mod</key>
+		<value>1000</value>
+		<type>int</type>
+	</param>
 	
+	<param>
+		<name>Prediction history size</name>
+		<key>history_size</key>
+		<value>100</value>
+		<type>int</type>
+	</param>
+
 	<sink>
 		<name>in</name>
 		<type>message</type>
 	</sink>
-	
+
 	<source>
-    	<name>classification</name>
- 		<type>message</type>
+		<name>classification</name>
+		<type>message</type>
 	</source>
-  
+
 </block>

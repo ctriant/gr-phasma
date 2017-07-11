@@ -40,12 +40,15 @@ namespace gr
     opencv_predict::sptr
     opencv_predict::make (const size_t classifier_type, const size_t data_type,
 			  const size_t npredictors, const size_t nlabels,
+			  const size_t history_size,
+			  bool debug_mode, size_t active_mod,
 			  const std::string filename,
 			  const std::string metafile)
     {
       return gnuradio::get_initial_sptr (
 	  new opencv_predict_impl (classifier_type, data_type, npredictors,
-				   nlabels, filename, metafile));
+				   nlabels, history_size, debug_mode, active_mod,
+				   filename, metafile));
     }
 
     /*
@@ -55,15 +58,21 @@ namespace gr
 					      const size_t data_type,
 					      const size_t npredictors,
 					      const size_t nlabels,
+					      const size_t history_size,
+					      bool debug_mode, size_t active_mod,
 					      const std::string filename,
 					      const std::string metafile) :
 	    gr::block ("opencv_predict", gr::io_signature::make (0, 0, 0),
 		       gr::io_signature::make (0, 0, 0)),
+	    classifier(history_size),
 	    d_classifier_type (classifier_type),
 	    d_data_type (data_type),
 	    d_npredictors (npredictors),
 	    d_labels (cv::Mat (1, nlabels, CV_32F)),
 	    d_nlabels (nlabels),
+	    d_history_size(history_size),
+	    d_debug_mode(debug_mode),
+	    d_active_mod(active_mod),
 	    d_predictors (cv::Mat (1, npredictors, CV_32F)),
 	    d_filename (filename),
 	    d_metafile (metafile)
@@ -161,7 +170,8 @@ namespace gr
 	  for (size_t i = 0; i < available_observations; i++) {
 	    /* Insert new dataset row */
 	    d_predictors = cv::Mat (1, d_featurset->get_features_num (),
-				    CV_32FC1, d_featurset->get_outbuf ());
+	    CV_32FC1,
+				    d_featurset->get_outbuf ());
 	    d_labels.at<float> (0, 0) = 0;
 
 	    d_data = cv::ml::TrainData::create (d_predictors,
@@ -177,6 +187,7 @@ namespace gr
 		  decision =
 		      reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
 			  d_predictors, predict_labels);
+		  record_prediction((int)decision, d_active_mod);
 		  break;
 		}
 	      default:
@@ -187,7 +198,6 @@ namespace gr
 	  }
 
 	  std::string final_dec = decode_decision (decision);
-//	  std::string final_dec = std::to_string (decision);
 
 	  sigMF meta_msg = sigMF ("cf32", "./", "1.1.0");
 	  sigMF meta = sigMF ("cf32", "./", "1.1.0");
@@ -197,7 +207,6 @@ namespace gr
 
 	  meta.parse_file (d_metafile);
 	  meta.add_annotation (meta_msg.get_annotation ()[0]);
-	  //meta.add_capture(meta_msg.get_capture()[0]);
 
 	  /* Append output file */
 	  std::ofstream outfile;
@@ -258,6 +267,18 @@ namespace gr
 	default:
 	  return "UNKNOWN";
 	}
+    }
+
+    bool
+    opencv_predict_impl::stop ()
+    {
+      std::cout << "Accuracy: " << calc_pred_accuracy() << std::endl;
+      return true;
+    }
+
+    void
+    opencv_predict_impl::set_active_mod (size_t active_mod) {
+      d_active_mod = active_mod;
     }
 
   } /* namespace phasma */
