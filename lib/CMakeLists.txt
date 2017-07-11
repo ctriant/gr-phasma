@@ -39,7 +39,8 @@ list(APPEND phasma_sources
     sigmf_debug_impl.cc
     featuresets/dummy_featureset.cc
     featuresets/raw_iq_featureset.cc 
-    featuresets/jaga.cc)
+    featuresets/jaga.cc
+    classifier.cc)
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
 if(NOT phasma_sources)
