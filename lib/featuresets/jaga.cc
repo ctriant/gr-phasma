@@ -82,6 +82,7 @@ namespace gr
 	memset (d_fftw_in_buf, 0, d_samples_num * sizeof(float));
 	memset (d_fftw_out_buf, 0, d_samples_num * sizeof(gr_complex));
 	memset (d_psd, 0, d_samples_num * sizeof(float));
+	memset (d_outbuf, 0, JAGA_FEATURES_NUM * sizeof(float));
 
 	float inst_amp_var = compute_instant_amp_variance (in);
 	float max_psd_inst_amp = compute_max_psd_instant_amp (in);
@@ -183,6 +184,12 @@ namespace gr
       jaga::get_outbuf () const
       {
 	return d_outbuf;
+      }
+
+      void
+      jaga::set_samples_num (size_t samples_num)
+      {
+        d_samples_num = samples_num;
       }
 
     } /* namespace featurest */

@@ -52,6 +52,9 @@ namespace gr
 	float*
 	get_outbuf () const;
 
+	void
+	set_samples_num (size_t samples_num);
+
       private:
 	float*
 	compute_instant_amp (const gr_complex* in);

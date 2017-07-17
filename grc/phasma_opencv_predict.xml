@@ -11,6 +11,7 @@
 		$history_size,
 		$debug_mode,
 		$active_mod,
+		$labels,
 		$filename,
 		$metafile)
 self.$(id).set_active_mod($active_mod)
@@ -64,6 +65,13 @@ self.$(id).set_active_mod($active_mod)
 		<key>metafile</key>
 		<type>file_save</type>
 	</param>
+	
+	<param>
+	   	<name>Labels</name>
+	   	<key>labels</key>
+	   	<value>()</value>
+		<type>raw</type>
+	</param> 
 
 	<param>
 		<name>Debug Mode:</name>

@@ -23,6 +23,7 @@
 #define INCLUDED_PHASMA_CLASSIFIER_H
 
 #include <phasma/api.h>
+#include <phasma/log.h>
 #include <boost/circular_buffer.hpp>
 #include <utility>
 
@@ -49,10 +50,25 @@ namespace gr {
       void
       clear_pred_history();
 
+      void
+      calculate_confussion_matrix ();
+
+      void
+      print_confussion_matrix ();
+
     protected:
-      classifier(size_t hist_size);
+      classifier(size_t hist_size, size_t labels_num,
+		 const std::vector<size_t> &labels);
+
+      std::string
+      decode_decision (int decision);
 
       boost::circular_buffer<std::pair <int, int>> d_pred_history;
+      std::vector<std::vector<std::pair <int, float>>> d_confusion_matrix;
+
+      std::vector<size_t> d_labels;
+
+      size_t d_labels_num;
     };
 
   } // namespace phasma

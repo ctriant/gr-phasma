@@ -122,7 +122,7 @@ namespace gr
 			      gr_vector_const_void_star &input_items,
 			      gr_vector_void_star &output_items)
     {
-      const gr_complex *in;
+      gr_complex *in;
       size_t available_observations = noutput_items / d_npredictors;
 
       if (d_nobservations % d_ninport) {
@@ -132,8 +132,7 @@ namespace gr
 
       for (size_t i = 0; i < available_observations; i++) {
 	for (size_t n = 0; n < d_ninport; n++) {
-
-	  in = (const gr_complex*) input_items[n];
+	  in = (gr_complex*) input_items[n];
 	  memcpy (d_input, &in[i * d_npredictors],
 		  d_npredictors * sizeof(gr_complex));
 
@@ -141,7 +140,6 @@ namespace gr
 
 	  /* Insert new dataset row */
 	  if (d_predictors.empty () && d_labels.empty ()) {
-	    std::cout << "hey" << std::endl;
 	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
 	    d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
 	  }
@@ -151,9 +149,24 @@ namespace gr
 	    cv::vconcat (cv::Mat (1, 1, CV_32F, d_port_label[n]), d_labels,
 			 d_labels);
 	  }
+//	  PHASMA_LOG_INFO("Sample: %f %f %f %f %f %f %d\n", d_featurset->get_outbuf()[0],
+//			  d_featurset->get_outbuf()[1],
+//			  d_featurset->get_outbuf()[2],
+//			  d_featurset->get_outbuf()[3],
+//			  d_featurset->get_outbuf()[4],
+//			  d_featurset->get_outbuf()[5],
+//			  d_port_label[n]);
 	  d_remaining--;
-	  PHASMA_LOG_INFO("Sample: %f %f %f\n", d_predictors.at<float>(i,0), d_predictors.at<float>(i,1), d_labels.at<float>(0));
 	  if (d_remaining == 0) {
+	    for (size_t i = 0; i < available_observations*2; i++) {
+		  PHASMA_LOG_INFO("Sample: %f %f %f %f %f %f %f\n", d_predictors.at<float>(i,0),
+		  			  d_predictors.at<float>(i,1),
+		  			  d_predictors.at<float>(i,2),
+		  			  d_predictors.at<float>(i,3),
+		  			  d_predictors.at<float>(i,4),
+		  			  d_predictors.at<float>(i,5),
+		  			  d_labels.at<float>(i,0));
+	    }
 	    // TODO: Train model
 	    PHASMA_LOG_INFO("====== Dataset creation =====\n");
 	    cv::Mat var_types (1, d_featurset->get_features_num() + 1, CV_8UC1,

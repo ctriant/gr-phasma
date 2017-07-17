@@ -302,7 +302,6 @@ namespace gr
       pmt_t tup;
       tup = make_tuple (string_to_symbol (meta_record.toJSON ()),
 			make_blob (sig_rec.iq_samples, iq_size_bytes));
-
       d_msg_queue.push_back (tup);
 
       delete[] sig_rec.iq_samples;

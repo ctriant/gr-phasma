@@ -52,7 +52,7 @@ namespace gr
       static sptr
       make (const size_t classifier_type, size_t data_type, size_t npredictors,
 	    const size_t nlabels, const size_t history_size,
-	    bool debug_mode, size_t active_mod,
+	    bool debug_mode, size_t active_mod, const std::vector<size_t> &labels,
 	    const std::string filename, const std::string metafile);
 
       virtual void
