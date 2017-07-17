@@ -151,11 +151,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
-      <value>/home/ctriant/csd/thesis/simulations/jaga/bpsk_phasma.bin</value>
+      <value>/home/ctriant/captures/bpsk_01.bin</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -206,15 +206,15 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
-      <value>/home/ctriant/csd/thesis/simulations/jaga/qpsk_phasma.bin</value>
+      <value>/home/ctriant/captures/bpsk_1.bin</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(271, 187)</value>
+      <value>(271, 179)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -261,15 +261,180 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
-      <value>/home/ctriant/csd/thesis/simulations/jaga/gfsk_phasma.bin</value>
+      <value>/home/ctriant/captures/qpsk_1.bin</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(271, 251)</value>
+      <value>(79, 259)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_source_1_0_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>repeat</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_source</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/ctriant/captures/gfsk_1.bin</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(263, 418)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_source_1_0_1</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>repeat</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_source</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/ctriant/captures/gmsk_1.bin</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(79, 514)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_source_1_0_1_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>repeat</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_source</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/ctriant/captures/bpsk_3.bin</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(271, 243)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -316,15 +481,70 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
-      <value>/home/ctriant/csd/thesis/simulations/jaga/gmsk_phasma.bin</value>
+      <value>/home/ctriant/captures/qpsk_3.bin</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(271, 323)</value>
+      <value>(79, 323)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_source_1_1_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>repeat</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_source</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/ctriant/captures/qpsk_01.bin</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(79, 195)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -356,10 +576,120 @@
     </param>
   </block>
   <block>
+    <key>blocks_file_source</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/ctriant/captures/gfsk_01.bin</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(263, 355)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_source_1_3</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>repeat</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_source</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/ctriant/captures/gmsk_01.bin</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(79, 450)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_source_1_3_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>repeat</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
     <key>phasma_rforest_model</key>
     <param>
       <key>active_var_count</key>
-      <value>2</value>
+      <value>6</value>
     </param>
     <param>
       <key>alias</key>
@@ -379,7 +709,7 @@
     </param>
     <param>
       <key>nobservations</key>
-      <value>40</value>
+      <value>50000</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -387,11 +717,11 @@
     </param>
     <param>
       <key>filename</key>
-      <value>/home/ctriant/model.xml</value>
+      <value>/home/ctriant/multi_snr.xml</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(853, 159)</value>
+      <value>(614, 207)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -407,11 +737,11 @@
     </param>
     <param>
       <key>ninport</key>
-      <value>4</value>
+      <value>10</value>
     </param>
     <param>
       <key>labels</key>
-      <value>(0,1,2,3)</value>
+      <value>(0, 0, 0, 1, 1, 1, 2, 2, 3, 3)</value>
     </param>
     <param>
       <key>max_categories</key>
@@ -431,7 +761,7 @@
     </param>
     <param>
       <key>npredictors</key>
-      <value>256</value>
+      <value>325</value>
     </param>
     <param>
       <key>regression_accu</key>
@@ -455,15 +785,51 @@
     <sink_key>1</sink_key>
   </connection>
   <connection>
+    <source_block_id>blocks_file_source_1_0_0</source_block_id>
+    <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>4</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_0_1</source_block_id>
+    <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>7</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_0_1_0</source_block_id>
+    <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>9</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_file_source_1_1</source_block_id>
     <sink_block_id>phasma_rforest_model_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>2</sink_key>
   </connection>
   <connection>
+    <source_block_id>blocks_file_source_1_1_0</source_block_id>
+    <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>5</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_file_source_1_2</source_block_id>
     <sink_block_id>phasma_rforest_model_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>3</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_3</source_block_id>
+    <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>6</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_3_0</source_block_id>
+    <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>8</sink_key>
   </connection>
 </flow_graph>

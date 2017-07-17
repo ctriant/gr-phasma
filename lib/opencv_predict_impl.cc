@@ -42,13 +42,14 @@ namespace gr
 			  const size_t npredictors, const size_t nlabels,
 			  const size_t history_size,
 			  bool debug_mode, size_t active_mod,
+			  const std::vector<size_t> &labels,
 			  const std::string filename,
 			  const std::string metafile)
     {
       return gnuradio::get_initial_sptr (
 	  new opencv_predict_impl (classifier_type, data_type, npredictors,
 				   nlabels, history_size, debug_mode, active_mod,
-				   filename, metafile));
+				   labels, filename, metafile));
     }
 
     /*
@@ -60,16 +61,16 @@ namespace gr
 					      const size_t nlabels,
 					      const size_t history_size,
 					      bool debug_mode, size_t active_mod,
+					      const std::vector<size_t> &labels,
 					      const std::string filename,
 					      const std::string metafile) :
 	    gr::block ("opencv_predict", gr::io_signature::make (0, 0, 0),
 		       gr::io_signature::make (0, 0, 0)),
-	    classifier(history_size),
+	    classifier(history_size, nlabels, labels),
 	    d_classifier_type (classifier_type),
 	    d_data_type (data_type),
 	    d_npredictors (npredictors),
 	    d_labels (cv::Mat (1, nlabels, CV_32F)),
-	    d_nlabels (nlabels),
 	    d_history_size(history_size),
 	    d_debug_mode(debug_mode),
 	    d_active_mod(active_mod),
@@ -80,6 +81,12 @@ namespace gr
 
       message_port_register_in (pmt::mp ("in"));
       message_port_register_out (pmt::mp ("classification"));
+
+      if (d_debug_mode && labels.size() <= 0) {
+	throw std::runtime_error("opencv_predict: Prediction labels not set");
+      }
+
+      set_labels (labels);
 
       switch (d_classifier_type)
 	{
@@ -152,6 +159,11 @@ namespace gr
 		    pmt::tuple_ref (tuple, 1));
 		available_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 		    / sizeof(gr_complex);
+		if (available_samples < d_npredictors) {
+		  PHASMA_WARN("openCV predict: Extracted samples less than predictors");
+		  d_featurset->set_samples_num(available_samples);
+		}
+		// TODO: What if extracted samples more than predictors?
 		d_featurset->generate ((gr_complex*) data);
 	      }
 	      break;
@@ -163,7 +175,7 @@ namespace gr
 	    }
 
 	  /**
-	   * Iterate through all available observations of data provided by
+	   * TODO: Iterate through all available observations of data provided by
 	   * the incoming tuple message
 	   */
 	  available_observations = 1;
@@ -238,41 +250,18 @@ namespace gr
       }
     }
 
-    std::string
-    opencv_predict_impl::decode_decision (int decision)
+    void
+    opencv_predict_impl::set_labels (const std::vector<size_t> &labels)
     {
-      switch ((int) decision)
-	{
-	case BPSK:
-	  return "BPSK";
-	  break;
-	case QPSK:
-	  return "QPSK";
-	  break;
-	case GMSK:
-	  return "GMSK";
-	  break;
-	case GFSK:
-	  return "GFSK";
-	  break;
-	case QAM16:
-	  return "16QAM";
-	  break;
-	case PSK8:
-	  return "8PSK";
-	  break;
-	case QAM64:
-	  return "64QAM";
-	  break;
-	default:
-	  return "UNKNOWN";
-	}
+      d_classes = labels;
     }
 
     bool
     opencv_predict_impl::stop ()
     {
       std::cout << "Accuracy: " << calc_pred_accuracy() << std::endl;
+      calculate_confussion_matrix();
+      print_confussion_matrix();
       return true;
     }
 

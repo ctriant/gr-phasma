@@ -66,21 +66,23 @@ private:
 	
 	const std::string d_metafile;
 
+	std::vector<size_t> d_classes;
+
 	void
 	print_opencv_mat(cv::Mat* mat);
-
-	std::string
-	decode_decision(int decision);
 
 public:
 	opencv_predict_impl(const size_t classifier_type, const size_t data_type,
 			const size_t npredictors, const size_t nlabels, const size_t history_size,
-			bool debug_mode, size_t active_mod,
+			bool debug_mode, size_t active_mod, const std::vector<size_t> &labels,
 			const std::string filename, const std::string metafile);
 	~opencv_predict_impl();
 
 	void 
 	msg_handler_trigger();
+
+	void
+	set_labels (const std::vector<size_t> &labels);
 
 	bool
 	stop();

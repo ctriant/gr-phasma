@@ -25,7 +25,6 @@ sigMF::sigMF (std::string datatype, std::string datapath, std::string version)
   d_frequency = 0;
   
   this->add_global();
-  this->add_capture(0, 10e6);
   
 }
 
