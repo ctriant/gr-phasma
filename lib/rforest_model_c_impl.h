@@ -44,7 +44,7 @@ namespace gr
       size_t d_remaining;
       size_t d_ninport;
       size_t d_max_depth;
-      size_t d_min_sample_count;
+      int d_min_sample_count;
       size_t d_regression_accu;
       size_t d_max_categories;
       size_t d_active_var_count;
@@ -83,7 +83,7 @@ namespace gr
       rforest_model_c_impl (const size_t npredictors, const size_t nobservations,
 			  const size_t ninport, const std::vector<uint16_t> &labels,
 			  const size_t max_depth,
-			  const size_t min_sample_count,
+			  const int min_sample_count,
 			  const size_t regression_accu,
 			  const uint8_t use_surrogates,
 			  const size_t max_categories,

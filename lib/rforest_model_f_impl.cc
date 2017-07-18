@@ -35,7 +35,7 @@ namespace gr
     rforest_model_f::sptr
     rforest_model_f::make (const size_t npredictors, const size_t nobservations,
 			 size_t ninport, const std::vector<uint16_t> &labels,
-			 const size_t max_depth, const size_t min_sample_count,
+			 const size_t max_depth, const int min_sample_count,
 			 const size_t regression_accu,
 			 const uint8_t use_surrogates,
 			 const size_t max_categories,
@@ -59,7 +59,7 @@ namespace gr
 					    const size_t ninport,
 					    const std::vector<uint16_t> &labels,
 					    const size_t max_depth,
-					    const size_t min_sample_count,
+					    const int min_sample_count,
 					    const size_t regression_accu,
 					    const uint8_t use_surrogates,
 					    const size_t max_categories,
