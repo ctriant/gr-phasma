@@ -35,7 +35,7 @@ namespace gr
     rforest_model_c::sptr
     rforest_model_c::make (const size_t npredictors, const size_t nobservations,
 			 size_t ninport, const std::vector<uint16_t> &labels,
-			 const size_t max_depth, const size_t min_sample_count,
+			 const size_t max_depth, const int min_sample_count,
 			 const size_t regression_accu,
 			 const uint8_t use_surrogates,
 			 const size_t max_categories,
@@ -59,7 +59,7 @@ namespace gr
 					    const size_t ninport,
 					    const std::vector<uint16_t> &labels,
 					    const size_t max_depth,
-					    const size_t min_sample_count,
+					    const int min_sample_count,
 					    const size_t regression_accu,
 					    const uint8_t use_surrogates,
 					    const size_t max_categories,
@@ -98,7 +98,13 @@ namespace gr
      */
     rforest_model_c_impl::~rforest_model_c_impl ()
     {
-
+//      cv::Mat mat = d_rfmodel->getVarImportance();
+//      for (size_t idr = 0; idr < (size_t)mat.rows; idr++) {
+//      	for (size_t idc = 0; idc < (size_t)mat.cols; idc++) {
+//      	  printf ("%f ", mat.at<float> (idr, idc));
+//      	}
+//      	printf ("\n");
+//            }
     }
 
     static void
@@ -110,9 +116,9 @@ namespace gr
 	PHASMA_ERROR("Training failed\n");
       }
       else {
-	PHASMA_LOG_INFO("Train error: %f\n",
+	PHASMA_LOG_INFO("Train error: %lf\n",
 			model->calcError (data, false, cv::noArray ()));
-	PHASMA_LOG_INFO("Test error: %f\n",
+	PHASMA_LOG_INFO("Test error: %lf\n",
 			model->calcError (data, true, cv::noArray ()));
       }
     }
@@ -124,7 +130,6 @@ namespace gr
     {
       gr_complex *in;
       size_t available_observations = noutput_items / d_npredictors;
-
       if (d_nobservations % d_ninport) {
 	PHASMA_WARN(
 	    "Number of requested dataset observation should be multiple of number of inputs.");
@@ -133,6 +138,7 @@ namespace gr
       for (size_t i = 0; i < available_observations; i++) {
 	for (size_t n = 0; n < d_ninport; n++) {
 	  in = (gr_complex*) input_items[n];
+
 	  memcpy (d_input, &in[i * d_npredictors],
 		  d_npredictors * sizeof(gr_complex));
 
@@ -149,17 +155,11 @@ namespace gr
 	    cv::vconcat (cv::Mat (1, 1, CV_32F, d_port_label[n]), d_labels,
 			 d_labels);
 	  }
-//	  PHASMA_LOG_INFO("Sample: %f %f %f %f %f %f %d\n", d_featurset->get_outbuf()[0],
-//			  d_featurset->get_outbuf()[1],
-//			  d_featurset->get_outbuf()[2],
-//			  d_featurset->get_outbuf()[3],
-//			  d_featurset->get_outbuf()[4],
-//			  d_featurset->get_outbuf()[5],
-//			  d_port_label[n]);
 	  d_remaining--;
+
 	  if (d_remaining == 0) {
-	    for (size_t i = 0; i < available_observations*2; i++) {
-		  PHASMA_LOG_INFO("Sample: %f %f %f %f %f %f %f\n", d_predictors.at<float>(i,0),
+	    for (size_t i = 0; i < d_nobservations; i++) {
+		  PHASMA_DEBUG("Sample: %f %f %f %f %f %f %f\n", d_predictors.at<float>(i,0),
 		  			  d_predictors.at<float>(i,1),
 		  			  d_predictors.at<float>(i,2),
 		  			  d_predictors.at<float>(i,3),
@@ -180,16 +180,6 @@ namespace gr
 						      var_types);
 //	    d_train_data->shuffleTrainTest();
 	    d_train_data->setTrainTestSplitRatio (0.95);
-
-//	    cv::Mat test_samples = d_train_data->getTestSamples();
-//	    cv::Mat train_samples = d_train_data->getTrainSamples();
-//	    cv::Mat test_labels = d_train_data->getResponses();
-//	    cv::Mat samples = d_train_data->getSamples();
-//
-//	    PHASMA_DEBUG("Test samples:");
-//	    print_opencv_mat(&samples);
-//	    PHASMA_DEBUG("Test responses:");
-//	    print_opencv_mat(&test_labels);
 
 	    PHASMA_LOG_INFO("Test/Train: %d/%d\n",
 			    d_train_data->getNTestSamples (),
@@ -213,7 +203,7 @@ namespace gr
 	  }
 	}
       }
-      return noutput_items;
+      return d_npredictors;
     }
 
     void

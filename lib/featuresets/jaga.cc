@@ -84,6 +84,9 @@ namespace gr
 	memset (d_psd, 0, d_samples_num * sizeof(float));
 	memset (d_outbuf, 0, JAGA_FEATURES_NUM * sizeof(float));
 
+	d_mean[0] = 0;
+	d_stddev[0] = 0;
+
 	float inst_amp_var = compute_instant_amp_variance (in);
 	float max_psd_inst_amp = compute_max_psd_instant_amp (in);
 	d_outbuf[0] = inst_amp_var;
@@ -151,15 +154,15 @@ namespace gr
 	for (size_t i = 0; i < d_samples_num; i++) {
 	  d_fftw_in_buf[i] = (d_abs[i] / d_mean[0]) - 1;
 	}
+
 	fftwf_execute (d_fft);
 
 	for (size_t i = 0; i < d_samples_num; i++) {
 	  d_psd[i] = std::pow (
-	      std::abs (reinterpret_cast<float*> (d_fftw_out_buf)[i]), 2);
+	      std::abs (reinterpret_cast<gr_complex*> (d_fftw_out_buf)[i]), 2);
 	}
 
 	volk_32f_index_max_16u (d_max, d_psd, d_samples_num);
-
 	return d_psd[*d_max] / d_samples_num;
       }
 
