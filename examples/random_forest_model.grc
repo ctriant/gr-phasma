@@ -324,7 +324,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(263, 418)</value>
+      <value>(79, 450)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -379,7 +379,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(79, 514)</value>
+      <value>(255, 578)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -599,7 +599,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(263, 355)</value>
+      <value>(79, 386)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -654,7 +654,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(79, 450)</value>
+      <value>(255, 514)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -709,7 +709,7 @@
     </param>
     <param>
       <key>nobservations</key>
-      <value>50000</value>
+      <value>500000</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -721,7 +721,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(614, 207)</value>
+      <value>(758, 207)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -757,7 +757,7 @@
     </param>
     <param>
       <key>min_sample_count</key>
-      <value>10</value>
+      <value>-1</value>
     </param>
     <param>
       <key>npredictors</key>
