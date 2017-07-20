@@ -13,7 +13,8 @@
 #include <string.h>
 #include <sys/syscall.h>
 
-#define PHASMA_MESSAGES 1
+#define ENABLE_NCURSES 1
+#define PHASMA_MESSAGES 0
 #define PHASMA_DEBUG_MESSAGES 0
 
 #if PHASMA_MESSAGES
