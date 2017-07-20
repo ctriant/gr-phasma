@@ -30,68 +30,84 @@
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
+#include <phasma/utils/ncurses_utils.h>
 #include <pthread.h>
 
-namespace gr {
-namespace phasma {
+namespace gr
+{
+  namespace phasma
+  {
 
-class opencv_predict_impl: public opencv_predict {
-private:
-	size_t d_npredictors;
-	size_t d_nlabels;
-	const size_t d_history_size;
-	size_t d_debug_mode;
-	size_t d_active_mod;
-	size_t d_classifier_type;
-	size_t d_data_type;
+    class opencv_predict_impl : public opencv_predict
+    {
+    private:
+      size_t d_npredictors;
+      size_t d_nlabels;
+      const size_t d_history_size;
+      size_t d_debug_mode;
+      size_t d_active_mod;
+      size_t d_classifier_type;
+      size_t d_data_type;
+      gr_complex* d_input;
+      float* d_input_re;
+      float* d_input_imag;
 
+      cv::Mat d_predictors;
+      cv::Ptr<cv::ml::TrainData> d_data;
 
-	gr_complex* d_input;
-	float* d_input_re;
-	float* d_input_imag;
-	
-	cv::Mat d_predictors;
-	cv::Ptr<cv::ml::TrainData> d_data;
+      cv::Ptr<cv::ml::StatModel> d_model;
+      cv::Mat d_labels;
 
-	cv::Ptr<cv::ml::StatModel> d_model;
-	cv::Mat d_labels;
+      const std::string d_filename;
 
-	const std::string d_filename;
-	
-	featureset::jaga* d_featurset;
+      featureset::jaga* d_featurset;
 
-	boost::shared_ptr<boost::thread> d_trigger_thread;
-	
-	Json::Value d_root;
-	
-	const std::string d_metafile;
+      boost::shared_ptr<boost::thread> d_trigger_thread;
+      boost::shared_ptr<boost::thread> d_print_thread;
+      boost::condition_variable d_start_print_cond;
+      boost::mutex d_start_print_mtx;
 
-	std::vector<size_t> d_classes;
+      bool d_running;
 
-	void
-	print_opencv_mat(cv::Mat* mat);
+      Json::Value d_root;
 
-public:
-	opencv_predict_impl(const size_t classifier_type, const size_t data_type,
-			const size_t npredictors, const size_t nlabels, const size_t history_size,
-			bool debug_mode, size_t active_mod, const std::vector<size_t> &labels,
-			const std::string filename, const std::string metafile);
-	~opencv_predict_impl();
+      const std::string d_metafile;
 
-	void 
-	msg_handler_trigger();
+      std::vector<size_t> d_classes;
 
-	void
-	set_labels (const std::vector<size_t> &labels);
+      void
+      print_opencv_mat (cv::Mat* mat);
 
-	bool
-	stop();
+      void
+      update_confusion_matrix_screen ();
 
-	void
-	set_active_mod (size_t active_mod);
-};
+    public:
+      opencv_predict_impl (const size_t classifier_type, const size_t data_type,
+			   const size_t npredictors, const size_t nlabels,
+			   const size_t history_size, bool debug_mode,
+			   size_t active_mod, const std::vector<size_t> &labels,
+			   const std::string filename,
+			   const std::string metafile);
+      ~opencv_predict_impl ();
 
-} // namespace phasma
+      void
+      msg_handler_trigger ();
+
+      void
+      set_labels (const std::vector<size_t> &labels);
+
+      bool
+      stop ();
+
+      void
+      set_active_mod (size_t active_mod);
+
+      void
+      print_thread ();
+
+    };
+
+  } // namespace phasma
 } // namespace gr
 
 #endif /* INCLUDED_PHASMA_OPENCV_PREDICT_IMPL_H */

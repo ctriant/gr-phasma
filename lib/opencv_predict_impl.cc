@@ -40,16 +40,15 @@ namespace gr
     opencv_predict::sptr
     opencv_predict::make (const size_t classifier_type, const size_t data_type,
 			  const size_t npredictors, const size_t nlabels,
-			  const size_t history_size,
-			  bool debug_mode, size_t active_mod,
-			  const std::vector<size_t> &labels,
+			  const size_t history_size, bool debug_mode,
+			  size_t active_mod, const std::vector<size_t> &labels,
 			  const std::string filename,
 			  const std::string metafile)
     {
       return gnuradio::get_initial_sptr (
 	  new opencv_predict_impl (classifier_type, data_type, npredictors,
-				   nlabels, history_size, debug_mode, active_mod,
-				   labels, filename, metafile));
+				   nlabels, history_size, debug_mode,
+				   active_mod, labels, filename, metafile));
     }
 
     /*
@@ -60,21 +59,24 @@ namespace gr
 					      const size_t npredictors,
 					      const size_t nlabels,
 					      const size_t history_size,
-					      bool debug_mode, size_t active_mod,
+					      bool debug_mode,
+					      size_t active_mod,
 					      const std::vector<size_t> &labels,
 					      const std::string filename,
 					      const std::string metafile) :
 	    gr::block ("opencv_predict", gr::io_signature::make (0, 0, 0),
 		       gr::io_signature::make (0, 0, 0)),
-	    classifier(history_size, nlabels, labels),
+	    classifier (history_size, nlabels, labels),
 	    d_classifier_type (classifier_type),
 	    d_data_type (data_type),
 	    d_npredictors (npredictors),
+	    d_nlabels (nlabels),
 	    d_labels (cv::Mat (1, nlabels, CV_32F)),
-	    d_history_size(history_size),
-	    d_debug_mode(debug_mode),
-	    d_active_mod(active_mod),
+	    d_history_size (history_size),
+	    d_debug_mode (debug_mode),
+	    d_active_mod (active_mod),
 	    d_predictors (cv::Mat (1, npredictors, CV_32F)),
+	    d_running (true),
 	    d_filename (filename),
 	    d_metafile (metafile)
     {
@@ -82,8 +84,8 @@ namespace gr
       message_port_register_in (pmt::mp ("in"));
       message_port_register_out (pmt::mp ("classification"));
 
-      if (d_debug_mode && labels.size() <= 0) {
-	throw std::runtime_error("opencv_predict: Prediction labels not set");
+      if (d_debug_mode && labels.size () <= 0) {
+	throw std::runtime_error ("opencv_predict: Prediction labels not set");
       }
 
       set_labels (labels);
@@ -112,6 +114,13 @@ namespace gr
       d_trigger_thread = boost::shared_ptr<boost::thread> (
 	  new boost::thread (
 	      boost::bind (&opencv_predict_impl::msg_handler_trigger, this)));
+
+      if (ENABLE_NCURSES) {
+	d_print_thread = boost::shared_ptr<boost::thread> (
+	    new boost::thread (
+		boost::bind (&opencv_predict_impl::print_thread, this)));
+      }
+
     }
 
     /*
@@ -160,8 +169,9 @@ namespace gr
 		available_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 		    / sizeof(gr_complex);
 		if (available_samples < d_npredictors) {
-		  PHASMA_WARN("openCV predict: Extracted samples less than predictors");
-		  d_featurset->set_samples_num(available_samples);
+		  PHASMA_WARN(
+		      "openCV predict: Extracted samples less than predictors");
+		  d_featurset->set_samples_num (available_samples);
 		}
 		// TODO: What if extracted samples more than predictors?
 		d_featurset->generate ((gr_complex*) data);
@@ -199,7 +209,8 @@ namespace gr
 		  decision =
 		      reinterpret_cast<cv::Ptr<cv::ml::RTrees>&> (d_model)->predict (
 			  d_predictors, predict_labels);
-		  record_prediction((int)decision, d_active_mod);
+		  record_prediction ((int) decision, d_active_mod);
+		  calculate_confussion_matrix();
 		  break;
 		}
 	      default:
@@ -259,15 +270,103 @@ namespace gr
     bool
     opencv_predict_impl::stop ()
     {
-      std::cout << "Accuracy: " << calc_pred_accuracy() << std::endl;
-      calculate_confussion_matrix();
-      print_confussion_matrix();
+      d_running = false;
+      d_print_thread->join();
+      curs_set(1);
+      clear();
+      for (size_t i = 0; i < d_labels_num + 1; i++) {
+      	for (size_t j = 0; j < d_labels_num + 1; j++) {
+      	delwin(d_confusion_matrix_win[i][j]);
+      	}
+      }
+      delwin(d_logo_win);
+      endwin();
       return true;
     }
 
     void
-    opencv_predict_impl::set_active_mod (size_t active_mod) {
+    opencv_predict_impl::set_active_mod (size_t active_mod)
+    {
       d_active_mod = active_mod;
+    }
+
+    void
+    opencv_predict_impl::print_thread ()
+    {
+      size_t i = 0;
+      size_t j;
+      int pos;
+      struct tm *tm;
+      time_t t;
+      char str_time[300];
+
+      t = time (NULL);
+      tm = localtime (&t);
+      strftime (str_time, sizeof(str_time), "%d-%m-%Y at %H:%M:%S", tm);
+
+      sleep (1);
+      initscr ();
+      init_logo ();
+
+      for (size_t i = 0; i < d_labels_num + 1; i++) {
+	for (size_t j = 0; j < d_labels_num + 1; j++) {
+	  if (!i && !j) {
+	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
+	    LOGO_HEIGHT + 1 + i,
+							  j);
+	    box (d_confusion_matrix_win[i][j], ' ', ' ');
+	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
+		     ' ', ' ');
+	    wprintw (d_confusion_matrix_win[i][j], "%s", " ");
+	  }
+	  else if (!i && j > 0) {
+	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
+							  LOGO_HEIGHT + 1 + i,
+							  (COLS / 10) * j);
+	    box (d_confusion_matrix_win[i][j], ' ', ' ');
+	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
+		     ' ', ' ');
+	    wprintw (d_confusion_matrix_win[i][j], "%s",
+		     decode_decision (d_classes[j - 1]).c_str ());
+	  }
+	  else if (!j && i > 0) {
+	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
+							  LOGO_HEIGHT + 1 + i,
+							  j);
+	    box (d_confusion_matrix_win[i][j], ' ', ' ');
+	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
+		     ' ', ' ');
+	    wprintw (d_confusion_matrix_win[i][j], "%s",
+		     decode_decision (d_classes[i - 1]).c_str ());
+	  }
+	  else if (j && i) {
+	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
+							  LOGO_HEIGHT + 1 + i,
+							  (COLS / 10) * j);
+	    box (d_confusion_matrix_win[i][j], ' ', ' ');
+	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
+		     ' ', ' ');
+	    wprintw (d_confusion_matrix_win[i][j], "%s", " ");
+	  }
+	  wrefresh (d_confusion_matrix_win[i][j]);
+	}
+      }
+      while (d_running) {
+	update_confusion_matrix_screen ();
+      }
+    }
+
+    void
+    opencv_predict_impl::update_confusion_matrix_screen () {
+      for (size_t i = 1; i <= d_labels_num; i++) {
+	for (size_t j = 1; j <= d_labels_num; j++) {
+	  float v = d_confusion_matrix[i-1][j-1].second;
+	  if (v > 0) {
+	    mvwprintw(d_confusion_matrix_win[i][j], 0, 0, "%0.2f", v);
+	    wrefresh (d_confusion_matrix_win[i][j]);
+	  }
+	}
+      }
     }
 
   } /* namespace phasma */
