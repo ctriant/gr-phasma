@@ -307,12 +307,13 @@ namespace gr
       sleep (1);
       initscr ();
       init_logo ();
+      init_system_info ();
 
       for (size_t i = 0; i < d_labels_num + 1; i++) {
 	for (size_t j = 0; j < d_labels_num + 1; j++) {
 	  if (!i && !j) {
 	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-	    LOGO_HEIGHT + 1 + i,
+	    LOGO_HEIGHT + SYSTEM_INFO_HEIGHT + 1 + i,
 							  j);
 	    box (d_confusion_matrix_win[i][j], ' ', ' ');
 	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
@@ -321,7 +322,7 @@ namespace gr
 	  }
 	  else if (!i && j > 0) {
 	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-							  LOGO_HEIGHT + 1 + i,
+	    LOGO_HEIGHT + SYSTEM_INFO_HEIGHT + 1 + i,
 							  (COLS / 10) * j);
 	    box (d_confusion_matrix_win[i][j], ' ', ' ');
 	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
@@ -331,7 +332,7 @@ namespace gr
 	  }
 	  else if (!j && i > 0) {
 	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-							  LOGO_HEIGHT + 1 + i,
+	    LOGO_HEIGHT + SYSTEM_INFO_HEIGHT + 1 + i,
 							  j);
 	    box (d_confusion_matrix_win[i][j], ' ', ' ');
 	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
@@ -341,7 +342,7 @@ namespace gr
 	  }
 	  else if (j && i) {
 	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-							  LOGO_HEIGHT + 1 + i,
+	    LOGO_HEIGHT + 1 + SYSTEM_INFO_HEIGHT + i,
 							  (COLS / 10) * j);
 	    box (d_confusion_matrix_win[i][j], ' ', ' ');
 	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
