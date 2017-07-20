@@ -26,6 +26,7 @@
 
 #define CONFUSION_MATRIX_SIZE 10
 #define LOGO_HEIGHT 10
+#define SYSTEM_INFO_HEIGHT 5
 
 typedef struct _win_border_struct
 {
@@ -135,6 +136,7 @@ const char *d_ascii_logo =
 "| _|      |__|  |__| /__/     \\__\\ |_______/    |__|  |__| /__/     \\__\\ \n";
 
 WINDOW *d_logo_win;
+WINDOW *d_system_info_win;
 WINDOW *d_confusion_matrix_win[CONFUSION_MATRIX_SIZE][CONFUSION_MATRIX_SIZE];
 
 static inline void
@@ -147,6 +149,20 @@ init_logo ()
   wprintw (d_logo_win, "%s", d_ascii_logo);
   wprintw (d_logo_win, "\nA GNURadio Out-of-Tree Module for Automatic Modulation Classification");
   wrefresh (d_logo_win);
+
+}
+
+static inline void
+init_system_info ()
+{
+  d_system_info_win = create_newwin (SYSTEM_INFO_HEIGHT, COLS, LOGO_HEIGHT, 0);
+  box (d_logo_win, '-', '-');
+  wborder (d_logo_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+  /* Print the logo and a geeky message at a constant window*/
+  wprintw (d_system_info_win, "%s", "System information");
+  mvwprintw(d_system_info_win, 2, 2, "%s", "Noise floor:  -82 dB");
+  mvwprintw(d_system_info_win, 3, 2, "%s", "Classification method:  Random Forest");
+  wrefresh (d_system_info_win);
 
 }
 
