@@ -159,6 +159,12 @@ if(NOT CPPUNIT_FOUND)
 endif()
 
 ########################################################################
+# Find ncurses library for printing at the screen
+########################################################################
+set(CURSES_NEED_NCURSES TRUE)
+find_package(Curses REQUIRED)
+
+########################################################################
 # Setup doxygen option
 ########################################################################
 if(DOXYGEN_FOUND)

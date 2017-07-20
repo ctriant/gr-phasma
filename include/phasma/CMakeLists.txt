@@ -22,6 +22,7 @@
 ########################################################################
 install(FILES
     utils/sigMF.h
+    utils/ncurses_utils.h
     api.h
     log.h
     rforest_model_c.h

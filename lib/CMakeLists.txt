@@ -53,6 +53,7 @@ list(APPEND phasma_libs ${Boost_LIBRARIES}
                             ${ARMADILLO_LIBRARIES}
                             ${GNURADIO_ALL_LIBRARIES}
                             ${JSONCPP_LIBRARY}
+                            ${CURSES_LIBRARIES}
 )
 
 add_library(gnuradio-phasma SHARED ${phasma_sources})
