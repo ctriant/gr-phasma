@@ -27,6 +27,7 @@
 #include <volk/volk.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <phasma/utils/sigMF.h>
+#include <phasma/utils/ncurses_utils.h>
 #include "signal_separator_impl.h"
 
 namespace gr
@@ -311,8 +312,13 @@ namespace gr
     void
     signal_separator_impl::msg_handler_noise_floor (pmt_t msg)
     {
-      PHASMA_LOG_INFO("Signal extractor received estimated noise-floor");
+      float stddev[1];
+      float mean[1];
       memcpy (d_noise_floor, blob_data (msg), blob_length (msg));
+      volk_32f_stddev_and_mean_32f_x2 (stddev, mean, d_noise_floor,
+      					 d_fft_size);
+      PHASMA_LOG_INFO("Signal extractor received mean estimated noise-floor: %f", 10*std::log10(mean[0]));
+      update_noise_floor(10*std::log10(mean[0]));
     }
 
   } /* namespace phasma */
