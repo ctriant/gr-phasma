@@ -271,16 +271,18 @@ namespace gr
     opencv_predict_impl::stop ()
     {
       d_running = false;
-      d_print_thread->join();
-      curs_set(1);
-      clear();
-      for (size_t i = 0; i < d_labels_num + 1; i++) {
-      	for (size_t j = 0; j < d_labels_num + 1; j++) {
-      	delwin(d_confusion_matrix_win[i][j]);
-      	}
+      if (ENABLE_NCURSES) {
+	d_print_thread->join ();
+	curs_set (1);
+	clear ();
+	for (size_t i = 0; i < d_labels_num + 1; i++) {
+	  for (size_t j = 0; j < d_labels_num + 1; j++) {
+	    delwin (d_confusion_matrix_win[i][j]);
+	  }
+	}
+	delwin (d_logo_win);
+	endwin ();
       }
-      delwin(d_logo_win);
-      endwin();
       return true;
     }
 

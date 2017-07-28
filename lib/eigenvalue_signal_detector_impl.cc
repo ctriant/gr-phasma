@@ -220,7 +220,8 @@ namespace gr
 	    memcpy (&d_shift[d_num_samps_per_side], &d_noise_floor[0],
 		    sizeof(float) * (d_num_samps_per_side));
 	    if (!d_noise_floor_est_cnt) {
-	      d_status = false;
+	      d_noise_floor_est_cnt = 500;
+//	      d_status = false;
 	      message_port_pub (
 		  pmt::mp ("threshold"),
 		  pmt::make_blob (d_shift, d_subcarriers_num * sizeof(float)));

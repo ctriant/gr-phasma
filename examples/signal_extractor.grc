@@ -89,7 +89,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>1</value>
+      <value>2</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -192,7 +192,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(502, 11)</value>
+      <value>(510, 11)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -219,7 +219,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(406, 11)</value>
+      <value>(414, 11)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -258,7 +258,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>int(channel_num*ifft_size)</value>
+      <value>int((samp_rate * ifft_size) / channel_bw)</value>
     </param>
   </block>
   <block>
@@ -336,7 +336,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(336, 12)</value>
+      <value>(343, 11)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -348,7 +348,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>64</value>
+      <value>128</value>
     </param>
   </block>
   <block>
@@ -359,7 +359,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>0.01</value>
+      <value>0.1</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -1333,7 +1333,7 @@
     </param>
     <param>
       <key>npredictors</key>
-      <value>325</value>
+      <value>768</value>
     </param>
     <param>
       <key>filename</key>

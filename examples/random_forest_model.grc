@@ -689,7 +689,7 @@
     <key>phasma_rforest_model</key>
     <param>
       <key>active_var_count</key>
-      <value>6</value>
+      <value>0</value>
     </param>
     <param>
       <key>alias</key>
@@ -709,7 +709,7 @@
     </param>
     <param>
       <key>nobservations</key>
-      <value>500000</value>
+      <value>50000</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -757,11 +757,11 @@
     </param>
     <param>
       <key>min_sample_count</key>
-      <value>-1</value>
+      <value>100</value>
     </param>
     <param>
       <key>npredictors</key>
-      <value>325</value>
+      <value>768</value>
     </param>
     <param>
       <key>regression_accu</key>

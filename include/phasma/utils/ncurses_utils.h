@@ -127,7 +127,7 @@ create_box (WIN *p_win, bool flag)
   refresh ();
 }
 
-const char *d_ascii_logo =
+static const char *d_ascii_logo =
 ".______    __    __       ___           _______..___  ___.      ___     \n"
 "|   _  \\  |  |  |  |     /   \\         /       ||   \\/   |     /   \\    \n"
 "|  |_)  | |  |__|  |    /  ^  \\       |   (----`|  \\  /  |    /  ^  \\   \n"
@@ -135,9 +135,9 @@ const char *d_ascii_logo =
 "|  |      |  |  |  |  /  _____  \\  .----)   |   |  |  |  |  /  _____  \\ \n"
 "| _|      |__|  |__| /__/     \\__\\ |_______/    |__|  |__| /__/     \\__\\ \n";
 
-WINDOW *d_logo_win;
-WINDOW *d_system_info_win;
-WINDOW *d_confusion_matrix_win[CONFUSION_MATRIX_SIZE][CONFUSION_MATRIX_SIZE];
+static WINDOW *d_logo_win;
+static WINDOW *d_system_info_win;
+static WINDOW *d_confusion_matrix_win[CONFUSION_MATRIX_SIZE][CONFUSION_MATRIX_SIZE];
 
 static inline void
 init_logo ()
@@ -160,10 +160,17 @@ init_system_info ()
   wborder (d_logo_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
   /* Print the logo and a geeky message at a constant window*/
   wprintw (d_system_info_win, "%s", "System information");
-  mvwprintw(d_system_info_win, 2, 2, "%s", "Noise floor:  -82 dB");
+  mvwprintw(d_system_info_win, 2, 2, "%s", "Noise floor:  Estimation algorithm is running...");
   mvwprintw(d_system_info_win, 3, 2, "%s", "Classification method:  Random Forest");
   wrefresh (d_system_info_win);
 
+}
+
+static inline void
+update_noise_floor (float noise_floor)
+{
+  mvwprintw(d_system_info_win, 2, 2, "%s %f", "Noise floor: ", noise_floor);
+  wrefresh (d_system_info_win);
 }
 
 #endif /* INCLUDED_PHASMA_UTILS_NCURSES_UTILS_H_ */
