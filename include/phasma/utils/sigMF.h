@@ -158,7 +158,8 @@ public:
   void
   add_annotation (size_t samples_start, size_t sample_count,
 		  std::string comment, double freq_lower_edge,
-		  double freq_upper_edge, float decimation, std::string time);
+		  double freq_upper_edge, float decimation, std::string time,
+		  float snr);
   void
   add_annotation (Json::Value annotation);
   

@@ -311,7 +311,7 @@ void
 sigMF::add_annotation (size_t samples_start, size_t sample_count,
 		       std::string comment, double freq_lower_edge,
 		       double freq_upper_edge, float decimation, 
-		       std::string time)
+		       std::string time, float snr)
 {
   Json::Value annotation;
 
@@ -323,6 +323,7 @@ sigMF::add_annotation (size_t samples_start, size_t sample_count,
   annotation["core:freq_upper_edge"] = freq_upper_edge;
   annotation["core:decimation"] = decimation;
   annotation["core:time"] = time;
+  annotation["core:snr"] = snr;
 
   d_annotation_list.append (annotation);
   d_root["annotations"] = d_annotation_list;
