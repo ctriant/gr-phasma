@@ -127,6 +127,8 @@ namespace gr
 	d_noise_floor[i] = d_threshold_linear;
       }
 
+      d_mean_noise_floor = new float[1];
+
     }
 
     /*
@@ -139,8 +141,8 @@ namespace gr
       }
 
       delete[] d_tmp;
-
       delete[] d_noise_floor;
+      delete[] d_mean_noise_floor;
     }
 
     int
@@ -162,6 +164,8 @@ namespace gr
       size_t sig_slot_curr;
       size_t start_idx;
       size_t end_idx;
+      float mag_accum = 0;
+      float curr_snr = 0;
 
       pmt_t msg;
 
@@ -187,6 +191,7 @@ namespace gr
 
 	    if (spectrum_mag[i] > (d_noise_floor[i] * d_thresh_marg_lin)) {
 	      silence_count = 0;
+	      mag_accum += spectrum_mag[i];
 	      /**
 	       * If there is silence and a peak is detected in the spectrum
 	       * raise a signal alarm and mark the current slot.
@@ -210,14 +215,18 @@ namespace gr
 					 current_time_milliseconds);
 		d_abs_signal_end = i - d_silence_guardband_samples + 1;
 		sig_slot_curr = d_abs_signal_end / d_ifft_size;
+		curr_snr = 10* log10((mag_accum / (d_abs_signal_end - d_abs_signal_start))
+				     / d_threshold_linear);
 		if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps) {
 		  record_signal (in, &d_signals, sig_slot_checkpoint,
 				 sig_slot_curr,
-				 to_iso_extended_string (curr_milliseconds));
+				 to_iso_extended_string (curr_milliseconds),
+				 curr_snr);
 		  sig_count++;
 		}
 		sig_alarm = false;
 		silence_count = 0;
+		mag_accum = 0;
 	      }
 	    }
 	  }
@@ -249,7 +258,8 @@ namespace gr
 					  std::vector<phasma_signal_t>* signals,
 					  size_t sig_slot_checkpoint,
 					  size_t curr_slot,
-					  std::string timestamp)
+					  std::string timestamp,
+					  float snr)
     {
       // Insert record in the signal vector.
       phasma_signal_t sig_rec;
@@ -258,7 +268,7 @@ namespace gr
       size_t iq_size_bytes;
       float phase_inc;
       float center_freq_rel;
-      std::vector<gr_complex> taps_new (d_taps.size ());
+      std::vector <gr_complex> taps_new (d_taps.size ());
 
       decimation_idx = curr_slot - sig_slot_checkpoint;
       span = decimation_idx + 1;
@@ -298,7 +308,7 @@ namespace gr
 	  d_abs_signal_start, d_abs_signal_end - d_abs_signal_start, "",
 	  (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
 	  (curr_slot * d_channel_bw) + d_center_freq, (d_channel_num / span),
-	  timestamp);
+	  timestamp, snr);
 
       pmt_t tup;
       tup = make_tuple (string_to_symbol (meta_record.toJSON ()),
@@ -313,12 +323,15 @@ namespace gr
     signal_separator_impl::msg_handler_noise_floor (pmt_t msg)
     {
       float stddev[1];
-      float mean[1];
       memcpy (d_noise_floor, blob_data (msg), blob_length (msg));
-      volk_32f_stddev_and_mean_32f_x2 (stddev, mean, d_noise_floor,
-      					 d_fft_size);
-      PHASMA_LOG_INFO("Signal extractor received mean estimated noise-floor: %f", 10*std::log10(mean[0]));
-      update_noise_floor(10*std::log10(mean[0]));
+      volk_32f_stddev_and_mean_32f_x2 (stddev, d_mean_noise_floor,
+				       d_noise_floor, d_fft_size);
+      d_mean_noise_floor[0] = 10 * std::log10 (d_mean_noise_floor[0]);
+      d_threshold_db = d_mean_noise_floor[0];
+      d_threshold_linear  = pow (10, d_threshold_db / 10);
+      PHASMA_LOG_INFO("Signal extractor received mean estimated noise-floor: %f",
+	  d_mean_noise_floor[0]);
+      update_noise_floor (d_mean_noise_floor[0]);
     }
 
   } /* namespace phasma */
