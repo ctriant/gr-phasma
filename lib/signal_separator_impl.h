@@ -58,10 +58,10 @@ namespace gr
       float d_min_sig_samps;
       size_t d_snapshots_required;
 
-      const float d_threshold_db;
+      float d_threshold_db;
       const float d_threshold_margin_db;
       const float d_thresh_marg_lin;
-      const float d_threshold_linear;
+      float d_threshold_linear;
       const size_t d_sig_num;
       const size_t d_conseq_channel_num;
 
@@ -89,11 +89,15 @@ namespace gr
       /* Vector that holds linear noise floor */
       float* d_noise_floor;
       
+      /* Mean noise floor in dB */
+      float* d_mean_noise_floor;
+      
       void
       record_signal (const gr_complex* fft_in,
 		     std::vector<phasma_signal_t>* signals,
 		     size_t sig_slot_checkpoint, size_t curr_slot,
-		     std::string time);
+		     std::string time,
+		     float snr);
 
     public:
       signal_separator_impl (float samp_rate, float channel_bw,
