@@ -44,14 +44,8 @@ namespace gr
       {
 	d_outbuf = new float[JAGA_FEATURES_NUM];
 
-	d_fftw_in_buf = (float *) fftwf_malloc (d_samples_num * sizeof(float));
-
-	d_fftw_out_buf = (fftwf_complex *) fftwf_malloc (
-	    d_samples_num * sizeof(fftwf_complex));
-
 	// create fft plan to be used for channel power measurements
-	d_fft = fftwf_plan_dft_r2c_1d (d_samples_num, d_fftw_in_buf,
-				       d_fftw_out_buf, FFTW_MEASURE);
+	d_fft =  new fft::fft_complex (d_samples_num, true, 1);
 
 	unsigned int alignment = volk_get_alignment ();
 	d_mean = (float*) volk_malloc (sizeof(float), alignment);
@@ -65,22 +59,18 @@ namespace gr
       jaga::~jaga ()
       {
 	delete[] d_outbuf;
-	fftwf_destroy_plan (d_fft);
+	delete d_fft;
 	volk_free (d_mean);
 	volk_free (d_stddev);
 	volk_free (d_abs);
 	volk_free (d_psd);
 	volk_free (d_max);
-	fftwf_free (d_fftw_in_buf);
-	fftwf_free (d_fftw_out_buf);
       }
 
       void
       jaga::generate (const gr_complex* in)
       {
 	memset (d_abs, 0, d_samples_num * sizeof(float));
-	memset (d_fftw_in_buf, 0, d_samples_num * sizeof(float));
-	memset (d_fftw_out_buf, 0, d_samples_num * sizeof(gr_complex));
 	memset (d_psd, 0, d_samples_num * sizeof(float));
 	memset (d_outbuf, 0, JAGA_FEATURES_NUM * sizeof(float));
 
@@ -152,14 +142,14 @@ namespace gr
 	float inst_amp = 0;
 
 	for (size_t i = 0; i < d_samples_num; i++) {
-	  d_fftw_in_buf[i] = (d_abs[i] / d_mean[0]) - 1;
+	  d_fft->get_inbuf ()[i] = (d_abs[i] / d_mean[0]) - 1;
 	}
 
-	fftwf_execute (d_fft);
+	d_fft->execute ();
 
 	for (size_t i = 0; i < d_samples_num; i++) {
 	  d_psd[i] = std::pow (
-	      std::abs (reinterpret_cast<gr_complex*> (d_fftw_out_buf)[i]), 2);
+	      std::abs (reinterpret_cast<gr_complex*> (d_fft->get_outbuf ())[i]), 2);
 	}
 
 	volk_32f_index_max_16u (d_max, d_psd, d_samples_num);
