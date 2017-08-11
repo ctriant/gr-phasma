@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /* 
- * Copyright 2017 <+YOU OR YOUR COMPANY+>.
+ * Copyright 2017 Kostis Triantafyllakis - ctriant.
  * 
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,6 @@
 #include <phasma/featuresets/dummy_featureset.h>
 #include <phasma/featuresets/raw_iq_featureset.h>
 #include <phasma/featuresets/jaga.h>
-#include <gnuradio/fft/fft.h>
-#include <gnuradio/fft/window.h>
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 

@@ -22,7 +22,7 @@
 #define INCLUDED_PHASMA_JAGA_H
 
 #include <phasma/api.h>
-#include <fftw3.h>
+#include <gnuradio/fft/fft.h>
 
 #define JAGA_FEATURES_NUM 6
 
@@ -81,11 +81,8 @@ namespace gr
 
 	uint16_t* d_max;
 
-	float* d_fftw_in_buf;
-	fftwf_complex* d_fftw_out_buf;
-
 	// fft plan for channel measurements
-	fftwf_plan d_fft;
+	fft::fft_complex* d_fft;
 
 	size_t d_samples_num;
 	size_t d_features_num;
