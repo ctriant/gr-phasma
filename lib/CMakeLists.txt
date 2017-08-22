@@ -40,7 +40,9 @@ list(APPEND phasma_sources
     featuresets/dummy_featureset.cc
     featuresets/raw_iq_featureset.cc 
     featuresets/jaga.cc
-    classifier.cc)
+    classifier.cc
+    ncurses_console_impl.cc
+    )
 
 set(phasma_sources "${phasma_sources}" PARENT_SCOPE)
 if(NOT phasma_sources)

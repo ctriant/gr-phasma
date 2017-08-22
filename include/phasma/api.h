@@ -74,4 +74,6 @@ typedef enum
   SPREAD_SPECTRUM,
 } phasma_mod_type_t;
 
+typedef std::vector<std::vector<std::pair<int, float>>> phasma_confusion_matrix_type_t;
+
 #endif /* INCLUDED_PHASMA_API_H */

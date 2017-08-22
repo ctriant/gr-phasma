@@ -14,8 +14,7 @@
 #include "phasma/opencv_predict.h"
 #include "phasma/signal_separator.h"
 #include "phasma/sigmf_debug.h"
-#include "phasma/featuresets/dummy_featureset.h"
-#include "phasma/featuresets/raw_iq_featureset.h"
+#include "phasma/ncurses_console.h"
 %}
 
 
@@ -29,9 +28,7 @@ GR_SWIG_BLOCK_MAGIC2(phasma, eigenvalue_signal_detector);
 GR_SWIG_BLOCK_MAGIC2(phasma, opencv_predict);
 %include "phasma/signal_separator.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, signal_separator);
-
 %include "phasma/sigmf_debug.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, sigmf_debug);
-
-%include "phasma/featuresets/dummy_featureset.h"
-%include "phasma/featuresets/raw_iq_featureset.h"
+%include "phasma/ncurses_console.h"
+GR_SWIG_BLOCK_MAGIC2(phasma, ncurses_console);

@@ -4,10 +4,10 @@
 	<key>phasma_signal_separator</key>
 	<category>[phasma]</category>
 	<import>import phasma</import>
-	<make>phasma.signal_separator($samp_rate, $channel_bw, 
+	<make>phasma.signal_separator($samp_rate, $channel_bw,
 		$ifft_size, $taps, $silence_guardband, $center_freq,
-		 $signal_duration, $min_sig_bw, $threshold_db, $threshold_margin_db, 
-		 $sig_num)
+		$signal_duration, $min_sig_bw, $threshold_db, $threshold_margin_db,
+		$sig_num)
 	</make>
 
 	<param>
@@ -36,7 +36,7 @@
 		<key>taps</key>
 		<value>()</value>
 		<type>raw</type>
-	</param>	
+	</param>
 
 	<param>
 		<name>Silence Guardband (Hz)</name>
@@ -44,21 +44,21 @@
 		<value>1e3</value>
 		<type>float</type>
 	</param>
-	
+
 	<param>
 		<name>Frequency Start (Hz)</name>
 		<key>center_freq</key>
 		<value></value>
 		<type>float</type>
 	</param>
-	
+
 	<param>
 		<name>Signal Duration</name>
 		<key>signal_duration</key>
 		<value>100e-3</value>
 		<type>float</type>
 	</param>
-	
+
 	<param>
 		<name>Minimum Bandwidth</name>
 		<key>min_sig_bw</key>
@@ -107,4 +107,10 @@
 		<name>out</name>
 		<type>message</type>
 	</source>
+
+	<source>
+		<name>print</name>
+		<type>message</type>
+	</source>
+
 </block>

@@ -76,19 +76,17 @@ namespace gr
 	    d_debug_mode (debug_mode),
 	    d_active_mod (active_mod),
 	    d_predictors (cv::Mat (1, npredictors, CV_32F)),
-	    d_running (true),
 	    d_filename (filename),
 	    d_metafile (metafile)
     {
 
       message_port_register_in (pmt::mp ("in"));
       message_port_register_out (pmt::mp ("classification"));
+      message_port_register_out (pmt::mp ("print"));
 
       if (d_debug_mode && labels.size () <= 0) {
 	throw std::runtime_error ("opencv_predict: Prediction labels not set");
       }
-
-      set_labels (labels);
 
       switch (d_classifier_type)
 	{
@@ -114,13 +112,6 @@ namespace gr
       d_trigger_thread = boost::shared_ptr<boost::thread> (
 	  new boost::thread (
 	      boost::bind (&opencv_predict_impl::msg_handler_trigger, this)));
-
-      if (ENABLE_NCURSES) {
-	d_print_thread = boost::shared_ptr<boost::thread> (
-	    new boost::thread (
-		boost::bind (&opencv_predict_impl::print_thread, this)));
-      }
-
     }
 
     /*
@@ -135,6 +126,7 @@ namespace gr
     {
 
       pmt::pmt_t msg;
+      pmt::pmt_t print_msg;
       pmt::pmt_t tuple;
       size_t curr_sig = 0;
       size_t available_samples = 0;
@@ -240,6 +232,16 @@ namespace gr
 	  message_port_pub (
 	      pmt::intern ("classification"),
 	      pmt::string_to_symbol (meta_msg.getRoot ().toStyledString ()));
+
+	  print_msg = pmt::make_dict ();
+          print_msg = pmt::dict_add (
+              print_msg,
+              pmt::intern ("CNFN_MATRIX_UPD"),
+              pmt::make_blob (
+                  &d_confusion_matrix,
+                  d_labels_num * d_labels_num * sizeof(std::pair<int, float>)));
+          message_port_pub (pmt::mp ("print"), print_msg);
+
 	  // Go catch the next tuple of the incoming vector message
 	  curr_sig++;
 	}
@@ -262,114 +264,9 @@ namespace gr
     }
 
     void
-    opencv_predict_impl::set_labels (const std::vector<size_t> &labels)
-    {
-      d_classes = labels;
-    }
-
-    bool
-    opencv_predict_impl::stop ()
-    {
-      d_running = false;
-      if (ENABLE_NCURSES) {
-	d_print_thread->join ();
-	curs_set (1);
-	clear ();
-	for (size_t i = 0; i < d_labels_num + 1; i++) {
-	  for (size_t j = 0; j < d_labels_num + 1; j++) {
-	    delwin (d_confusion_matrix_win[i][j]);
-	  }
-	}
-	delwin (d_logo_win);
-	endwin ();
-      }
-      return true;
-    }
-
-    void
     opencv_predict_impl::set_active_mod (size_t active_mod)
     {
       d_active_mod = active_mod;
-    }
-
-    void
-    opencv_predict_impl::print_thread ()
-    {
-      size_t i = 0;
-      size_t j;
-      int pos;
-      struct tm *tm;
-      time_t t;
-      char str_time[300];
-
-      t = time (NULL);
-      tm = localtime (&t);
-      strftime (str_time, sizeof(str_time), "%d-%m-%Y at %H:%M:%S", tm);
-
-      sleep (1);
-      initscr ();
-      init_logo ();
-      init_system_info ();
-
-      for (size_t i = 0; i < d_labels_num + 1; i++) {
-	for (size_t j = 0; j < d_labels_num + 1; j++) {
-	  if (!i && !j) {
-	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-	    LOGO_HEIGHT + SYSTEM_INFO_HEIGHT + 1 + i,
-							  j);
-	    box (d_confusion_matrix_win[i][j], ' ', ' ');
-	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
-		     ' ', ' ');
-	    wprintw (d_confusion_matrix_win[i][j], "%s", " ");
-	  }
-	  else if (!i && j > 0) {
-	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-	    LOGO_HEIGHT + SYSTEM_INFO_HEIGHT + 1 + i,
-							  (COLS / 10) * j);
-	    box (d_confusion_matrix_win[i][j], ' ', ' ');
-	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
-		     ' ', ' ');
-	    wprintw (d_confusion_matrix_win[i][j], "%s",
-		     decode_decision (d_classes[j - 1]).c_str ());
-	  }
-	  else if (!j && i > 0) {
-	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-	    LOGO_HEIGHT + SYSTEM_INFO_HEIGHT + 1 + i,
-							  j);
-	    box (d_confusion_matrix_win[i][j], ' ', ' ');
-	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
-		     ' ', ' ');
-	    wprintw (d_confusion_matrix_win[i][j], "%s",
-		     decode_decision (d_classes[i - 1]).c_str ());
-	  }
-	  else if (j && i) {
-	    d_confusion_matrix_win[i][j] = create_newwin (1, COLS / 10,
-	    LOGO_HEIGHT + 1 + SYSTEM_INFO_HEIGHT + i,
-							  (COLS / 10) * j);
-	    box (d_confusion_matrix_win[i][j], ' ', ' ');
-	    wborder (d_confusion_matrix_win[i][j], ' ', ' ', ' ', ' ', ' ', ' ',
-		     ' ', ' ');
-	    wprintw (d_confusion_matrix_win[i][j], "%s", " ");
-	  }
-	  wrefresh (d_confusion_matrix_win[i][j]);
-	}
-      }
-      while (d_running) {
-	update_confusion_matrix_screen ();
-      }
-    }
-
-    void
-    opencv_predict_impl::update_confusion_matrix_screen () {
-      for (size_t i = 1; i <= d_labels_num; i++) {
-	for (size_t j = 1; j <= d_labels_num; j++) {
-	  float v = d_confusion_matrix[i-1][j-1].second;
-	  if (v > 0) {
-	    mvwprintw(d_confusion_matrix_win[i][j], 0, 0, "%0.2f", v);
-	    wrefresh (d_confusion_matrix_win[i][j]);
-	  }
-	}
-      }
     }
 
   } /* namespace phasma */

@@ -105,6 +105,11 @@ self.$(id).set_active_mod($active_mod)
 		<name>in</name>
 		<type>message</type>
 	</sink>
+	
+	<source>
+		<name>print</name>
+		<type>message</type>
+	</source>
 
 	<source>
 		<name>classification</name>

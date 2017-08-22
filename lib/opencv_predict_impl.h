@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /* 
- * Copyright 2017 <+YOU OR YOUR COMPANY+>.
+ * Copyright 2017 Kostis Triantafyllakis - ctriant.
  * 
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,6 @@
 #include <opencv2/ml.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
-#include <phasma/utils/ncurses_utils.h>
-#include <pthread.h>
 
 namespace gr
 {
@@ -63,23 +61,13 @@ namespace gr
       featureset::jaga* d_featurset;
 
       boost::shared_ptr<boost::thread> d_trigger_thread;
-      boost::shared_ptr<boost::thread> d_print_thread;
-      boost::condition_variable d_start_print_cond;
-      boost::mutex d_start_print_mtx;
-
-      bool d_running;
 
       Json::Value d_root;
 
       const std::string d_metafile;
 
-      std::vector<size_t> d_classes;
-
       void
       print_opencv_mat (cv::Mat* mat);
-
-      void
-      update_confusion_matrix_screen ();
 
     public:
       opencv_predict_impl (const size_t classifier_type, const size_t data_type,
@@ -94,16 +82,7 @@ namespace gr
       msg_handler_trigger ();
 
       void
-      set_labels (const std::vector<size_t> &labels);
-
-      bool
-      stop ();
-
-      void
       set_active_mod (size_t active_mod);
-
-      void
-      print_thread ();
 
     };
 
