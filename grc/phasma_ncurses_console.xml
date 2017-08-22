@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<block>
+  <name>ncurses_console</name>
+  <key>phasma_ncurses_console</key>
+  <category>[phasma]</category>
+  <import>import phasma</import>
+  <make>phasma.ncurses_console($labels)</make>
+  
+  <param>
+    <name>Labels</name>
+     <key>labels</key>
+     <value>()</value>
+     <type>raw</type>
+     </param> 
+	
+  <sink>
+    <name>in</name>
+    <type>message</type>
+  </sink>
+
+</block>

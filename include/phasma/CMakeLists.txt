@@ -34,5 +34,6 @@ install(FILES
     featuresets/dummy_featureset.h
     featuresets/raw_iq_featureset.h 
     featuresets/jaga.h
-    classifier.h DESTINATION include/phasma
+    classifier.h
+    ncurses_console.h DESTINATION include/phasma
 )
