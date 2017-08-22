@@ -29,6 +29,7 @@
 #include <math.h>
 #include <phasma/api.h> 
 #include <phasma/log.h>
+#include <float.h>
 #include <gnuradio/io_signature.h>
 
 #include "eigenvalue_signal_detector_impl.h"
@@ -222,9 +223,13 @@ namespace gr
 	    if (!d_noise_floor_est_cnt) {
 	      d_noise_floor_est_cnt = 500;
 //	      d_status = false;
+
 	      message_port_pub (
 		  pmt::mp ("threshold"),
 		  pmt::make_blob (d_shift, d_subcarriers_num * sizeof(float)));
+
+	      memset(d_noise_floor, FLT_MIN_EXP, d_fft_size * sizeof(float));
+	      memset(d_psd, FLT_MIN_EXP, d_fft_size * sizeof(float));
 	    }
 	  }
 	  break;
@@ -254,9 +259,7 @@ namespace gr
       volk_32fc_magnitude_squared_32f (d_psd, d_fft->get_outbuf (), d_fft_size);
 
       /* Get maximum for each sub-carrier*/
-      for (size_t b = 0; b < d_fft_size; b++) {
-	d_noise_floor[b] = boost::minmax (d_noise_floor[b], d_psd[b]).get<1> ();
-      }
+      volk_32f_x2_max_32f(d_noise_floor, d_noise_floor, d_psd, d_fft_size);
 
     }
 
