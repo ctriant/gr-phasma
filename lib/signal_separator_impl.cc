@@ -92,10 +92,10 @@ namespace gr
       set_output_multiple (d_fft_size);
 
       message_port_register_in (mp ("threshold_rcv"));
-      set_msg_handler (
-          mp ("threshold_rcv"),
-          boost::bind (&signal_separator_impl::msg_handler_noise_floor, this,
-                       _1));
+
+      d_noise_floor_thread = boost::shared_ptr<boost::thread> (
+          new boost::thread (
+              boost::bind (&signal_separator_impl::msg_handler_noise_floor, this)));
 
       message_port_register_out (mp ("out"));
       message_port_register_out (mp ("print"));
@@ -322,24 +322,27 @@ namespace gr
     }
 
     void
-    signal_separator_impl::msg_handler_noise_floor (pmt_t msg)
+    signal_separator_impl::msg_handler_noise_floor ()
     {
       float stddev[1];
       pmt::pmt_t print_msg;
+      pmt::pmt_t msg;
 
-      memcpy (d_noise_floor, blob_data (msg), blob_length (msg));
-      volk_32f_stddev_and_mean_32f_x2 (stddev, d_mean_noise_floor,
-                                       d_noise_floor, d_fft_size);
-      d_mean_noise_floor[0] = 10 * std::log10 (d_mean_noise_floor[0]);
-      d_threshold_db = d_mean_noise_floor[0];
-      d_threshold_linear = pow (10, d_threshold_db / 10);
-      PHASMA_LOG_INFO("Signal extractor received mean estimated noise-floor: %f",
-          d_mean_noise_floor[0]);
-
-      print_msg = make_dict ();
-      print_msg = dict_add (print_msg, pmt::intern ("NOISE_FLOOR_UPD"),
-                            pmt::from_float (d_threshold_db));
-      message_port_pub (mp ("print"), print_msg);
+      while (true) {
+        msg = delete_head_blocking (pmt::mp ("threshold_rcv"));
+        memcpy (d_noise_floor, blob_data (msg), blob_length (msg));
+        volk_32f_stddev_and_mean_32f_x2 (stddev, d_mean_noise_floor,
+                                         d_noise_floor, d_fft_size);
+        d_mean_noise_floor[0] = 10 * std::log10 (d_mean_noise_floor[0]);
+        d_threshold_db = d_mean_noise_floor[0];
+        d_threshold_linear = pow (10, d_threshold_db / 10);
+        PHASMA_LOG_INFO("Signal extractor received mean estimated noise-floor: %f",
+            d_mean_noise_floor[0]);
+        print_msg = make_dict ();
+        print_msg = dict_add (print_msg, pmt::intern ("NOISE_FLOOR_UPD"),
+                              pmt::from_float (d_threshold_db));
+        message_port_pub (mp ("print"), print_msg);
+      }
     }
 
   } /* namespace phasma */

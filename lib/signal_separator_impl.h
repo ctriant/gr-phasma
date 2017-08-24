@@ -27,6 +27,7 @@
 #include <gnuradio/filter/fft_filter_ccc.h>
 #include <gnuradio/blocks/rotator.h>
 #include <gnuradio/blocks/rotator_cc.h>
+#include <pthread.h>
 #include <string>
 #include <fstream>
 
@@ -86,6 +87,8 @@ namespace gr
 
       std::vector<pmt::pmt_t> d_msg_queue;
 
+      boost::shared_ptr<boost::thread> d_noise_floor_thread;
+
       /* Vector that holds linear noise floor */
       float* d_noise_floor;
       
@@ -114,7 +117,7 @@ namespace gr
       ~signal_separator_impl ();
 
       void
-      msg_handler_noise_floor (pmt::pmt_t msg);
+      msg_handler_noise_floor ();
 
       int
       work (int noutput_items, gr_vector_const_void_star &input_items,
