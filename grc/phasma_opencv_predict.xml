@@ -109,6 +109,7 @@ self.$(id).set_active_mod($active_mod)
 	<source>
 		<name>print</name>
 		<type>message</type>
+		<optional>1</optional>
 	</source>
 
 	<source>

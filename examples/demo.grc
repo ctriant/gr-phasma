@@ -1273,11 +1273,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(805, 777)</value>
+      <value>(930, 772)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1395,7 +1395,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(111, 554)</value>
+      <value>(137, 521)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1848,7 +1848,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(111, 626)</value>
+      <value>(145, 594)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2193,13 +2193,7 @@
     <source_block_id>phasma_opencv_predict_0</source_block_id>
     <sink_block_id>blocks_message_debug_0_0</sink_block_id>
     <source_key>classification</source_key>
-    <sink_key>store</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>phasma_opencv_predict_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_0</sink_block_id>
-    <source_key>print</source_key>
-    <sink_key>store</sink_key>
+    <sink_key>print</sink_key>
   </connection>
   <connection>
     <source_block_id>phasma_opencv_predict_0</source_block_id>
@@ -2224,12 +2218,6 @@
     <sink_block_id>phasma_sigmf_debug_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>sigmf</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>phasma_signal_separator_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_0</sink_block_id>
-    <source_key>print</source_key>
-    <sink_key>store</sink_key>
   </connection>
   <connection>
     <source_block_id>phasma_signal_separator_0</source_block_id>

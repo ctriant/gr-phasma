@@ -104,12 +104,13 @@
 	</sink>
 
 	<source>
-		<name>out</name>
+		<name>print</name>
 		<type>message</type>
+		<optional>1</optional>
 	</source>
 
 	<source>
-		<name>print</name>
+		<name>out</name>
 		<type>message</type>
 	</source>
 
