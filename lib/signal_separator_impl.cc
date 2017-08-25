@@ -187,9 +187,6 @@ namespace gr
 
         if (s == 0) {
           for (size_t i = 0; i < d_fft_size; i++) {
-
-            sig_slot_curr = i / d_ifft_size;
-
             if (spectrum_mag[i] > (d_noise_floor[i] * d_thresh_marg_lin)) {
               silence_count = 0;
               mag_accum += spectrum_mag[i];
@@ -199,7 +196,8 @@ namespace gr
                */
               if (!sig_alarm) {
                 sig_alarm = true;
-                d_abs_signal_start = i - d_silence_guardband_samples;
+                sig_slot_curr = i / d_ifft_size - 1;
+                d_abs_signal_start = i;
                 sig_slot_checkpoint = sig_slot_curr;
               }
             }
@@ -214,8 +212,8 @@ namespace gr
                 current_time_milliseconds = milliseconds (millisecs);
                 ptime curr_milliseconds (curr_microsecs.date (),
                                          current_time_milliseconds);
-                d_abs_signal_end = i - d_silence_guardband_samples + 1;
-                sig_slot_curr = d_abs_signal_end / d_ifft_size;
+                d_abs_signal_end = i + 1;
+                sig_slot_curr = d_abs_signal_end / d_ifft_size + 1;
                 curr_snr = 10
                     * log10 (
                         (mag_accum / (d_abs_signal_end - d_abs_signal_start))
@@ -239,7 +237,7 @@ namespace gr
          * domain samples for each transmission.
          */
         else {
-          // TODO: What about timestamp when more than one snapshot available?
+          
         }
 
         if (sig_count > 0) {
@@ -271,6 +269,7 @@ namespace gr
       float phase_inc;
       float center_freq_rel;
       std::vector<gr_complex> taps_new (d_taps.size ());
+      pmt_t tup;
 
       decimation_idx = curr_slot - sig_slot_checkpoint;
       span = decimation_idx + 1;
@@ -312,7 +311,6 @@ namespace gr
           (curr_slot * d_channel_bw) + d_center_freq, (d_channel_num / span),
           timestamp, snr);
 
-      pmt_t tup;
       tup = make_tuple (string_to_symbol (meta_record.toJSON ()),
                         make_blob (sig_rec.iq_samples, iq_size_bytes));
       d_msg_queue.push_back (tup);
