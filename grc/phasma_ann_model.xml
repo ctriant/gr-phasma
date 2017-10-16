@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<block>
+	<name>OpenCV Artificial Neural Network Trainer</name>
+	<key>phasma_ann_model</key>
+	<category>[phasma]</category>
+	<import>import phasma</import>
+	<make>phasma.ann_model_$(type.fcn)($npredictors,
+		$nobservations,
+		$ninport,
+		$labels,
+		$activation_func,
+		$activation_a,
+		$activation_b,
+		$layer_sizes,
+		$train_method,
+		$filename)
+	</make>
+	
+	<callback>bind_port_label(labels)</callback>
+	
+	<param>
+		<name>IO Type</name>
+		<key>type</key>
+		<type>enum</type>
+		<option>
+			<name>Complex</name>
+			<key>complex</key>
+			<opt>fcn:c</opt>
+		</option>
+		<option>
+			<name>Float</name>
+			<key>float</key>
+			<opt>fcn:f</opt>
+		</option>
+	</param>
+	
+	<param>
+		<name>Predictors number</name>
+		<key>npredictors</key>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Dataset observations</name>
+		<key>nobservations</key>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Input ports number</name>
+		<key>ninport</key>
+		<type>int</type>
+	</param>
+
+	<param>
+	   	<name>Labels</name>
+	   	<key>labels</key>
+	   	<value>()</value>
+		<type>raw</type>
+	</param> 
+	
+	<param>
+		<name>Activation Function</name>
+		<key>activation_func</key>
+		<type>enum</type>
+		<option>
+			<name>IDENTITY </name>
+			<key>0</key>
+		</option>
+		<option>
+			<name>SIGMOID_SYM</name>
+			<key>1</key>
+		</option>
+		<option>
+			<name>GAUSSIAN</name>
+			<key>2</key>
+		</option>
+	</param>
+	
+	<param>
+		<name>Activation Alpha</name>
+		<key>activation_a</key>
+		<type>float</type>
+	</param>
+	
+	<param>
+		<name>Activation Beta</name>
+		<key>activation_b</key>
+		<type>float</type>
+	</param>
+	
+	<param>
+	   	<name>Layer Sizes</name>
+	   	<key>layer_sizes</key>
+	   	<value>()</value>
+		<type>raw</type>
+	</param> 
+
+	<param>
+		<name>File destination</name>
+		<key>filename</key>
+		<type>file_save</type>
+	</param>
+	
+	<param>
+		<name>Training Method</name>
+		<key>train_method</key>
+		<type>enum</type>
+		<option>
+			<name>BACKPROP</name>
+			<key>0</key>
+		</option>
+		<option>
+			<name>RPROP</name>
+			<key>1</key>
+		</option>
+	</param>
+
+	<sink>
+		<name>in</name>
+		<type>$type</type>
+		<nports>$ninport</nports>
+	</sink>
+
+</block>

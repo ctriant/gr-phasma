@@ -411,6 +411,81 @@
     </param>
   </block>
   <block>
+    <key>phasma_ann_model</key>
+    <param>
+      <key>activation_a</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>activation_b</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>activation_func</key>
+      <value>2</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>nobservations</key>
+      <value>50000</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>filename</key>
+      <value>/home/ctriant/ann.xml</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(975, 207)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>phasma_ann_model_0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>ninport</key>
+      <value>10</value>
+    </param>
+    <param>
+      <key>labels</key>
+      <value>(0, 0, 0, 1, 1, 1, 2, 2, 3, 3)</value>
+    </param>
+    <param>
+      <key>layer_sizes</key>
+      <value>(2,5,4)</value>
+    </param>
+    <param>
+      <key>npredictors</key>
+      <value>768</value>
+    </param>
+    <param>
+      <key>train_method</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
     <key>phasma_rforest_model</key>
     <param>
       <key>active_var_count</key>
@@ -438,7 +513,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>filename</key>
@@ -499,9 +574,21 @@
   </block>
   <connection>
     <source_block_id>blocks_file_source_1</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1</source_block_id>
     <sink_block_id>phasma_rforest_model_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_0</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_file_source_1_0</source_block_id>
@@ -510,16 +597,64 @@
     <sink_key>1</sink_key>
   </connection>
   <connection>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>4</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_0_0</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>7</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_0_1</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>9</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_0_1_0</source_block_id>
+    <source_block_id>blocks_file_source_1_1</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>2</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_file_source_1_1</source_block_id>
     <sink_block_id>phasma_rforest_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>5</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_1_0</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>3</sink_key>
   </connection>
   <connection>
+    <source_block_id>blocks_file_source_1_2</source_block_id>
+    <sink_key>3</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_file_source_1_1_0</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>6</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_3</source_block_id>
     <sink_block_id>phasma_rforest_model_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>2</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_file_source_1_3_0</source_block_id>
+    <sink_block_id>phasma_ann_model_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>8</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_file_source_1_1_1</source_block_id>
