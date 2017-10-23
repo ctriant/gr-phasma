@@ -30,6 +30,8 @@
 #include <complex>
 #include <algorithm>
 #include <numeric>
+#include <math.h>
+#include <cmath>
 
 namespace gr
 {
@@ -44,27 +46,36 @@ namespace gr
       {
 	d_outbuf = new float[JAGA_FEATURES_NUM];
 
-	// create fft plan to be used for channel power measurements
-	d_fft =  new fft::fft_complex (d_samples_num, true, 1);
+	// create fft plans to be used for channel power measurements
+	for (size_t i = 0; i < 6; i++) {
+	  samples_num = d_spf[i];
+	  d_fft_plans.push_back (new fft::fft_complex (samples_num, true, 1));
+	}
+
+	d_fft = new fft::fft_complex (samples_num, true, 1);
 
 	unsigned int alignment = volk_get_alignment ();
 	d_mean = (float*) volk_malloc (sizeof(float), alignment);
 	d_stddev = (float*) volk_malloc (sizeof(float), alignment);
 	d_abs = (float*) volk_malloc (d_samples_num * sizeof(float), alignment);
 	d_psd = (float*) volk_malloc (d_samples_num * sizeof(float), alignment);
-
 	d_max = (uint16_t*) volk_malloc (sizeof(uint16_t), alignment);
+	d_samples = (gr_complex*) volk_malloc (
+	    d_samples_num * sizeof(gr_complex), alignment);
       }
 
       jaga::~jaga ()
       {
 	delete[] d_outbuf;
-	delete d_fft;
+	for (size_t i = 0; i < 6; i++) {
+	  delete d_fft_plans[i];
+	}
 	volk_free (d_mean);
 	volk_free (d_stddev);
 	volk_free (d_abs);
 	volk_free (d_psd);
 	volk_free (d_max);
+	volk_free (d_samples);
       }
 
       void
@@ -73,98 +84,82 @@ namespace gr
 	memset (d_abs, 0, d_samples_num * sizeof(float));
 	memset (d_psd, 0, d_samples_num * sizeof(float));
 	memset (d_outbuf, 0, JAGA_FEATURES_NUM * sizeof(float));
+	memset (d_samples, 0, d_samples_num * sizeof(float));
 
 	d_mean[0] = 0;
 	d_stddev[0] = 0;
 
-	float inst_amp_var = compute_instant_amp_variance (in);
-	float max_psd_inst_amp = compute_max_psd_instant_amp (in);
-	d_outbuf[0] = inst_amp_var;
-	d_outbuf[1] = max_psd_inst_amp;
+	size_t feature_cnt = 0;
+	size_t samples_num;
 
-	/*
-	 * Standard deviation of angle, imaginary and real part
-	 */
-	for (size_t s = 0; s < d_samples_num; s++) {
-	  d_tmp_angle.push_back (gr::fast_atan2f (in[s]));
-	  d_tmp_i.push_back (in[s].imag ());
-	  d_tmp_q.push_back (in[s].real ());
+	for (size_t i = 0; i < 6; i++) {
+	  samples_num = d_spf[i];
+	  memcpy (d_samples, in, samples_num * sizeof(gr_complex));
+	  d_outbuf[feature_cnt++] = compute_instant_amp_variance (d_samples,
+								  samples_num);
+	  d_outbuf[feature_cnt++] = compute_max_psd_instant_amp (d_samples,
+								 samples_num);
 	}
-	d_outbuf[2] = compute_standard_deviation (&d_tmp_angle);
-	d_outbuf[3] = compute_standard_deviation (&d_tmp_i);
-	d_outbuf[4] = compute_standard_deviation (&d_tmp_q);
-
-	/*
-	 * Standard deviation of angle, imaginary and real part differences
-	 */
-	for (size_t s = 0; s < d_samples_num; s = s + 2) {
-	  d_tmp_angle_diff.push_back (
-	      gr::fast_atan2f (in[s + 1]) - gr::fast_atan2f (in[s]));
-	  d_tmp_i_diff.push_back (in[s + 1].imag () - in[s].imag ());
-	  d_tmp_q_diff.push_back (in[s + 1].real () - in[s].real ());
-	}
-
-	d_outbuf[5] = compute_standard_deviation (&d_tmp_angle_diff);
-
-	d_tmp_angle.clear ();
-	d_tmp_i.clear ();
-	d_tmp_q.clear ();
-	d_tmp_angle_diff.clear ();
-	d_tmp_i_diff.clear ();
-	d_tmp_q_diff.clear ();
-      }
-
-      double
-      jaga::compute_standard_deviation (std::vector<float>* in)
-      {
-
-	double sum;
-	double mean;
-	double sq_sum;
-	double stdev;
-	std::vector<double> diff (in->size ());
-	sum = std::accumulate (in->begin (), in->end (), 0.0);
-	mean = sum / in->size ();
-	std::transform (in->begin (), in->end (), diff.begin (),
-			[mean](double x) {return x - mean;});
-	sq_sum = std::inner_product (diff.begin (), diff.end (), diff.begin (),
-				     0.0);
-	stdev = std::sqrt (sq_sum / in->size ());
-	diff.clear ();
-
-	return stdev;
+	d_outbuf[feature_cnt++] = compute_fft_power_variance (d_samples, 2.0);
+	d_outbuf[feature_cnt++] = compute_fft_power_variance (d_samples, 4.0);
       }
 
       float
-      jaga::compute_max_psd_instant_amp (const gr_complex* in)
+      jaga::compute_max_psd_instant_amp (gr_complex* in, size_t samples_num)
       {
-	size_t sum = 0;
-	float inst_amp = 0;
-
-	for (size_t i = 0; i < d_samples_num; i++) {
-	  d_fft->get_inbuf ()[i] = (d_abs[i] / d_mean[0]) - 1;
+	size_t idx = std::distance (d_spf,
+				    std::find (d_spf, d_spf + 6, samples_num));
+	volk_32fc_magnitude_32f (d_abs, in, samples_num);
+	volk_32f_stddev_and_mean_32f_x2 (d_stddev, d_mean, d_abs, samples_num);
+	for (size_t i = 0; i < samples_num; i++) {
+	  d_fft_plans[idx]->get_inbuf ()[i] = (d_abs[i] / d_mean[0]) - 1;
 	}
 
-	d_fft->execute ();
+	d_fft_plans[idx]->execute ();
+	
+	volk_32fc_magnitude_squared_32f (
+	    d_psd, (const gr_complex*) d_fft_plans[idx]->get_outbuf (),
+	    samples_num);
 
-	for (size_t i = 0; i < d_samples_num; i++) {
-	  d_psd[i] = std::pow (
-	      std::abs (reinterpret_cast<gr_complex*> (d_fft->get_outbuf ())[i]), 2);
+	for (size_t i = 0; i < samples_num; i++) {
+	  if (!std::isfinite (d_psd[i])) {
+	    d_psd[i] = 0;
+	  }
 	}
 
-	volk_32f_index_max_16u (d_max, d_psd, d_samples_num);
-	return d_psd[*d_max] / d_samples_num;
+	volk_32f_index_max_16u (d_max, d_psd, samples_num);
+	return d_psd[d_max[0]] / samples_num;
       }
 
       float
-      jaga::compute_instant_amp_variance (const gr_complex* in)
+      jaga::compute_instant_amp_variance (gr_complex* in, size_t samples_num)
       {
-	for (size_t i = 0; i < d_samples_num; i++) {
-	  d_abs[i] = std::abs (in[i]);
-	}
-	volk_32f_stddev_and_mean_32f_x2 (d_stddev, d_mean, d_abs,
-					 d_samples_num);
+	volk_32fc_magnitude_32f (d_abs, in, samples_num);
+	volk_32f_index_max_16u (d_max, d_abs, samples_num);
+	volk_32f_s32f_multiply_32f (d_abs, (const float*) d_abs,
+				    1 / d_abs[*d_max], samples_num);
+	volk_32f_stddev_and_mean_32f_x2 (d_stddev, d_mean, d_abs, samples_num);
 	return std::pow (d_stddev[0], 2);
+      }
+
+      float
+      jaga::compute_fft_power_variance (const gr_complex* in, float power)
+      {
+	// TODO: Change hardcoded value
+	size_t samples_num = 1024;
+	size_t idx = std::distance (d_spf,
+				    std::find (d_spf, d_spf + 6, samples_num));
+	volk_32fc_s32f_power_32fc (d_fft->get_inbuf (), in, power, samples_num);
+	d_fft->execute ();
+	memcpy (d_samples, &(d_fft->get_outbuf ())[samples_num / 2],
+		(samples_num / 2) * sizeof(gr_complex));
+	memcpy (&d_samples[samples_num / 2], d_fft->get_outbuf (),
+		(samples_num / 2) * sizeof(gr_complex));
+	volk_32fc_magnitude_32f (d_abs, d_samples, samples_num);
+	volk_32f_stddev_and_mean_32f_x2 (d_stddev, d_mean, d_abs, samples_num);
+	volk_32f_index_max_16u (d_max, d_abs, samples_num);
+
+	return std::log10(std::pow (d_stddev[0], 2) / d_abs[d_max[0]]);
       }
 
       size_t
@@ -182,7 +177,7 @@ namespace gr
       void
       jaga::set_samples_num (size_t samples_num)
       {
-        d_samples_num = samples_num;
+	d_samples_num = samples_num;
       }
 
     } /* namespace featurest */

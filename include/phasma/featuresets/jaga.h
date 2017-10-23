@@ -24,7 +24,7 @@
 #include <phasma/api.h>
 #include <gnuradio/fft/fft.h>
 
-#define JAGA_FEATURES_NUM 6
+#define JAGA_FEATURES_NUM 14
 
 namespace gr
 {
@@ -56,33 +56,29 @@ namespace gr
 	set_samples_num (size_t samples_num);
 
       private:
-	float*
-	compute_instant_amp (const gr_complex* in);
 	float
-	compute_max_psd_instant_amp (const gr_complex* in);
+	compute_max_psd_instant_amp (gr_complex* in, size_t samples_num);
+	
 	float
-	compute_instant_amp_variance (const gr_complex* in);
-
-	double
-	compute_standard_deviation (std::vector<float>* in);
-
-	std::vector<float> d_tmp_angle;
-	std::vector<float> d_tmp_angle_diff;
-	std::vector<float> d_tmp_i;
-	std::vector<float> d_tmp_q;
-	std::vector<float> d_tmp_i_diff;
-	std::vector<float> d_tmp_q_diff;
-
+	compute_instant_amp_variance (gr_complex* in, size_t samples_num);
+	
+	float
+	compute_fft_power_variance (const gr_complex* in, float power);
+	
+	size_t d_spf[6] =
+		  { 64, 128, 256, 512, 768, 1024 };
+	
+	std::vector<fft::fft_complex*> d_fft_plans;
+	fft::fft_complex* d_fft;
+	
 	float* d_outbuf;
 	float* d_mean;
 	float* d_stddev;
 	float* d_abs;
 	float* d_psd;
-
+	
+	gr_complex* d_samples;
 	uint16_t* d_max;
-
-	// fft plan for channel measurements
-	fft::fft_complex* d_fft;
 
 	size_t d_samples_num;
 	size_t d_features_num;
