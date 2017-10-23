@@ -143,28 +143,40 @@ namespace gr
 		  d_npredictors * sizeof(gr_complex));
 
 	  d_featurset->generate((const gr_complex*)d_input);
-
+	  
 	  /* Insert new dataset row */
-	  if (d_predictors.empty () && d_labels.empty ()) {
-	    d_predictors = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
-	    d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
+	  cv::Mat tmp = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
+	  if (!countNonZero(tmp != tmp)) {
+	    if (d_predictors.empty () && d_labels.empty ()) {
+	      d_predictors = tmp;
+	      d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
+	    }
+	    else {
+	      cv::vconcat (cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf()), d_predictors,
+			   d_predictors);
+	      cv::vconcat (cv::Mat (1, 1, CV_32F, d_port_label[n]), d_labels,
+			   d_labels);
+	    }
+	    d_remaining--;
 	  }
-	  else {
-	    cv::vconcat (cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf()), d_predictors,
-			 d_predictors);
-	    cv::vconcat (cv::Mat (1, 1, CV_32F, d_port_label[n]), d_labels,
-			 d_labels);
-	  }
-	  d_remaining--;
-
+	  
 	  if (d_remaining == 0) {
 	    for (size_t i = 0; i < d_nobservations; i++) {
-		  PHASMA_DEBUG("Sample: %f %f %f %f %f %f %f\n", d_predictors.at<float>(i,0),
+		  PHASMA_DEBUG("Sample: %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
+					  d_predictors.at<float>(i,0),
 		  			  d_predictors.at<float>(i,1),
 		  			  d_predictors.at<float>(i,2),
 		  			  d_predictors.at<float>(i,3),
 		  			  d_predictors.at<float>(i,4),
 		  			  d_predictors.at<float>(i,5),
+					  d_predictors.at<float>(i,6),
+					  d_predictors.at<float>(i,7),
+					  d_predictors.at<float>(i,8),
+					  d_predictors.at<float>(i,9),
+					  d_predictors.at<float>(i,10),
+					  d_predictors.at<float>(i,11),
+					  d_predictors.at<float>(i,12),
+					  d_predictors.at<float>(i,13),
 		  			  d_labels.at<float>(i,0));
 	    }
 	    // TODO: Train model
