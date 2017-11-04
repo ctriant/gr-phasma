@@ -30,6 +30,7 @@
 #include <pthread.h>
 #include <string>
 #include <fstream>
+#include <gnuradio/fxpt_nco.h>
 
 namespace gr
 {
@@ -46,6 +47,7 @@ namespace gr
       const size_t d_ifft_size;
 
       std::vector<gr_complex> d_taps;
+      std::vector<float> d_taps_dem;
 
       const float d_silence_guardband;
       size_t d_silence_guardband_samples;
@@ -83,7 +85,8 @@ namespace gr
       std::vector<float*> d_blackmann_harris_win;
 
       std::vector<gr::filter::kernel::fft_filter_ccc*> d_filter;
-      gr::blocks::rotator d_rotator;
+//      gr::blocks::rotator d_rotator;
+      gr::fxpt_nco d_nco;
 
       std::vector<pmt::pmt_t> d_msg_queue;
 
@@ -99,8 +102,8 @@ namespace gr
       record_signal (const gr_complex* fft_in,
 		     std::vector<phasma_signal_t>* signals,
 		     size_t sig_slot_checkpoint, size_t curr_slot,
-		     std::string time,
-		     float snr);
+		     size_t sig_start, size_t sig_end,
+		     std::string timestamp);
 
     public:
       signal_separator_impl (float samp_rate, float channel_bw,

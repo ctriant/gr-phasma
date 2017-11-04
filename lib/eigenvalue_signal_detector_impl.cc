@@ -136,9 +136,8 @@ namespace gr
 	  + (pow (sqrt (d_eigen_samples) + sqrt (d_smoothing_factor),
 		  (-1) * 2 / 3.0)
 	      / pow (d_eigen_samples * d_smoothing_factor, 1 / 6.0)) * 0.59;
-
-      threshold = p_1 / p_2;
-
+      
+      threshold = p_1 * p_2;
       return threshold;
     }
 
@@ -205,14 +204,17 @@ namespace gr
 	      PHASMA_DEBUG("Threshold: %f \n", d_eigen_threshold);
 	    }
 	    else {
-
+	      PHASMA_DEBUG("***** Signal Present *****");
+	      	      PHASMA_DEBUG("Eigenvalues num: %d", eigval.n_elem);
+	      	      PHASMA_DEBUG("Min Eigenvalue: %.10f", feigval[feigval.size () - 1]);
+	      	      PHASMA_DEBUG("Max Eigenvalue: %.10f", feigval[0]);
+	      	      PHASMA_DEBUG("Ratio: %.10f", ratio);
+	      	      PHASMA_DEBUG("Threshold: %f \n", d_eigen_threshold);
 	    }
 	  }
-
-	  if (d_noise_floor_est && noise_free == iter_num
-	      && d_noise_floor_est_cnt > 0) {
-	    PHASMA_DEBUG(
-		"Ok sailor! Bring me a good bottle of noise-floor rum.");
+//	  if (d_noise_floor_est && noise_free == iter_num
+//	      && d_noise_floor_est_cnt > 0) {
+	  if (d_noise_floor_est_cnt > 0) {
 	    noise_floor_estimation (in, noutput_items);
 	    /* Perform shifting and cropping on squared magnitude max noise-floor*/
 	    memcpy (&d_shift[0],

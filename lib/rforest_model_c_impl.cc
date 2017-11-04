@@ -86,7 +86,7 @@ namespace gr
 	    d_filename (filename),
 	    d_port_label (d_ninport)
     {
-      set_output_multiple (100 * d_npredictors);
+      set_output_multiple (d_npredictors);
       d_input = (gr_complex*) malloc (d_npredictors * sizeof(gr_complex));
       d_rfmodel = cv::ml::RTrees::create ();
       d_featurset = new featureset::jaga(d_npredictors);
@@ -134,7 +134,7 @@ namespace gr
 	PHASMA_WARN(
 	    "Number of requested dataset observation should be multiple of number of inputs.");
       }
-
+      
       for (size_t i = 0; i < available_observations; i++) {
 	for (size_t n = 0; n < d_ninport; n++) {
 	  in = (gr_complex*) input_items[n];
@@ -143,10 +143,9 @@ namespace gr
 		  d_npredictors * sizeof(gr_complex));
 
 	  d_featurset->generate((const gr_complex*)d_input);
-	  
 	  /* Insert new dataset row */
 	  cv::Mat tmp = cv::Mat (1, d_featurset->get_features_num(), CV_32FC1, d_featurset->get_outbuf());
-	  if (!countNonZero(tmp != tmp)) {
+	  //if (!countNonZero(tmp != tmp)) {
 	    if (d_predictors.empty () && d_labels.empty ()) {
 	      d_predictors = tmp;
 	      d_labels = cv::Mat (1, 1, CV_32F, d_port_label[n]);
@@ -158,11 +157,12 @@ namespace gr
 			   d_labels);
 	    }
 	    d_remaining--;
-	  }
+	    
+	  //}
 	  
 	  if (d_remaining == 0) {
 	    for (size_t i = 0; i < d_nobservations; i++) {
-		  PHASMA_DEBUG("Sample: %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
+		  PHASMA_DEBUG("Sample: %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
 					  d_predictors.at<float>(i,0),
 		  			  d_predictors.at<float>(i,1),
 		  			  d_predictors.at<float>(i,2),
@@ -177,6 +177,7 @@ namespace gr
 					  d_predictors.at<float>(i,11),
 					  d_predictors.at<float>(i,12),
 					  d_predictors.at<float>(i,13),
+					  d_predictors.at<float>(i,14),
 		  			  d_labels.at<float>(i,0));
 	    }
 	    // TODO: Train model
@@ -215,7 +216,7 @@ namespace gr
 	  }
 	}
       }
-      return d_npredictors;
+      return noutput_items;
     }
 
     void
