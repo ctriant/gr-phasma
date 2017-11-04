@@ -33,8 +33,8 @@ namespace gr {
       size_t d_conseq_channel_num;
 
       bool d_in_frame;
+      size_t d_msg_samples;
       size_t d_remaining;
-      size_t d_curr_sig;
       gr_complex* d_msg_buf;
 
      public:

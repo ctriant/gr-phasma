@@ -28,6 +28,8 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <phasma/utils/sigMF.h>
 #include <phasma/utils/ncurses_utils.h>
+#include <gnuradio/filter/firdes.h>
+#include <gnuradio/fft/window.h>
 #include "signal_separator_impl.h"
 
 namespace gr
@@ -86,7 +88,8 @@ namespace gr
             d_sig_num (sig_num),
             d_conseq_channel_num (250),
             d_abs_signal_start (0),
-            d_abs_signal_end (0)
+            d_abs_signal_end (0),
+	    d_nco()
     {
       /* Process in a per-FFT basis */
       set_output_multiple (d_fft_size);
@@ -121,8 +124,8 @@ namespace gr
             new fft_filter_ccc (d_channel_num / (i + 1), d_taps, 1));
       }
 
-      d_rotator.set_phase_incr (gr_complex (0, 0));
-
+//      d_rotator.set_phase_incr (gr_complex (0, 0));
+      d_nco.set_freq(0);
       d_noise_floor = new float[d_fft_size];
       for (size_t i = 0; i < d_fft_size; i++) {
         d_noise_floor[i] = d_threshold_linear;
@@ -202,7 +205,7 @@ namespace gr
               }
             }
 
-            else if ((spectrum_mag[i] < d_noise_floor[i] * d_thresh_marg_lin)
+            else if ((spectrum_mag[i] < (d_noise_floor[i] * d_thresh_marg_lin))
                 && sig_alarm) {
               silence_count++;
               if (((silence_count == d_silence_guardband_samples)
@@ -221,8 +224,9 @@ namespace gr
                 if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps) {
                   record_signal (in, &d_signals, sig_slot_checkpoint,
                                  sig_slot_curr,
-                                 to_iso_extended_string (curr_milliseconds),
-                                 curr_snr);
+				 d_abs_signal_start,
+				 d_abs_signal_end,
+				 to_iso_extended_string (curr_milliseconds));
                   sig_count++;
                 }
                 sig_alarm = false;
@@ -259,7 +263,9 @@ namespace gr
                                           std::vector<phasma_signal_t>* signals,
                                           size_t sig_slot_checkpoint,
                                           size_t curr_slot,
-                                          std::string timestamp, float snr)
+                                          size_t abs_start,
+					  size_t abs_end,
+					  std::string timestamp)
     {
       // Insert record in the signal vector.
       phasma_signal_t sig_rec;
@@ -268,7 +274,6 @@ namespace gr
       size_t iq_size_bytes;
       float phase_inc;
       float center_freq_rel;
-      std::vector<gr_complex> taps_new (d_taps.size ());
       pmt_t tup;
 
       decimation_idx = curr_slot - sig_slot_checkpoint;
@@ -283,21 +288,30 @@ namespace gr
       /* TODO: Mind the case of multiple available snapshots */
       center_freq_rel = (((curr_slot * d_channel_bw
           + sig_slot_checkpoint * d_channel_bw) / 2) - (d_samp_rate / 2));
-
-      phase_inc = ((2.0 * M_PI * center_freq_rel) / d_samp_rate) * -1
+      
+      phase_inc = ((2.0 * M_PI * center_freq_rel) / d_samp_rate)
           * (d_channel_num / span);
-      for (size_t t = 0; t < d_taps.size (); t++) {
-        taps_new[t] = d_taps[t] * std::exp (gr_complex (0, t * phase_inc));
+      d_taps_dem = 
+      gr::filter::firdes::low_pass(1,
+  		     1.0,
+  		     (float)(abs_end - abs_start)/(span*d_ifft_size)/2,	// Hz center of transition band
+  		     0.055,	// Hz width of transition band
+		     gr::filter::firdes::WIN_BLACKMAN_HARRIS,
+  		     6.76);
+      std::vector<gr_complex> taps_new (d_taps_dem.size ());
+      for (size_t t = 0; t < d_taps_dem.size (); t++) {
+        //taps_new[t] = d_taps_dem[t] * std::exp (gr_complex (0, t * phase_inc));
+	taps_new[t] = d_taps_dem[t] * std::exp (gr_complex (1, 0));
       }
-
+      
       d_filter[decimation_idx]->set_taps (taps_new);
-
-      d_rotator.set_phase_incr (exp (gr_complex (0, phase_inc)));
-
+      
+      d_nco.set_freq((2*M_PI*(-center_freq_rel))/d_samp_rate);
+      d_nco.sincos(d_tmp, d_fft_size, 1.0);
+      volk_32fc_x2_multiply_32fc(d_tmp, d_tmp, in, d_fft_size);
       d_filter[decimation_idx]->filter (
-          (curr_slot - sig_slot_checkpoint) * d_ifft_size, in, d_tmp);
-      d_rotator.rotateN (sig_rec.iq_samples, d_tmp,
-                         (curr_slot - sig_slot_checkpoint) * d_ifft_size);
+          (curr_slot - sig_slot_checkpoint) * d_ifft_size, d_tmp, sig_rec.iq_samples);
+      
 
       d_signals.push_back (sig_rec);
 
@@ -309,7 +323,7 @@ namespace gr
           d_abs_signal_start, d_abs_signal_end - d_abs_signal_start, "",
           (sig_slot_checkpoint * d_channel_bw) + d_center_freq,
           (curr_slot * d_channel_bw) + d_center_freq, (d_channel_num / span),
-          timestamp, snr);
+	  timestamp, 0);
 
       tup = make_tuple (string_to_symbol (meta_record.toJSON ()),
                         make_blob (sig_rec.iq_samples, iq_size_bytes));
@@ -336,6 +350,8 @@ namespace gr
         d_threshold_linear = pow (10, d_threshold_db / 10);
         PHASMA_LOG_INFO("Signal extractor received mean estimated noise-floor: %f",
             d_mean_noise_floor[0]);
+        PHASMA_LOG_INFO("Current noise-floor: %f",
+			10*log10(d_threshold_linear * d_thresh_marg_lin));
         print_msg = make_dict ();
         print_msg = dict_add (print_msg, pmt::intern ("NOISE_FLOOR_UPD"),
                               pmt::from_float (d_threshold_db));

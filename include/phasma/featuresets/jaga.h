@@ -24,7 +24,7 @@
 #include <phasma/api.h>
 #include <gnuradio/fft/fft.h>
 
-#define JAGA_FEATURES_NUM 14
+#define JAGA_FEATURES_NUM 15
 
 namespace gr
 {
@@ -63,7 +63,7 @@ namespace gr
 	compute_instant_amp_variance (gr_complex* in, size_t samples_num);
 	
 	float
-	compute_fft_power_variance (const gr_complex* in, float power);
+	compute_fft_power_variance (const gr_complex* in, size_t power);
 	
 	size_t d_spf[6] =
 		  { 64, 128, 256, 512, 768, 1024 };
@@ -77,6 +77,7 @@ namespace gr
 	float* d_abs;
 	float* d_psd;
 	
+	gr_complex* d_power;
 	gr_complex* d_samples;
 	uint16_t* d_max;
 

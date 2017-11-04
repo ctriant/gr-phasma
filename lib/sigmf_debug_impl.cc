@@ -45,10 +45,10 @@ namespace gr {
 	      d_ifft_size(ifft_size),
 	      d_conseq_channel_num(conseq_channel_num),
 	      d_in_frame(false),
-	      d_remaining(0),
-	      d_curr_sig(0)
+	      d_msg_samples(0),
+	      d_remaining(0)
     {
-      set_output_multiple (d_ifft_size);
+      set_output_multiple (6*d_ifft_size);
       message_port_register_in(pmt::mp("sigmf"));
 
       d_msg_buf = new gr_complex[d_ifft_size * d_conseq_channel_num];
@@ -71,53 +71,55 @@ namespace gr {
       size_t max_available;
       pmt::pmt_t msg;
       pmt::pmt_t tuple;
-      gr_complex* data;
-
+      gr_complex* msg_data;
       gr_complex *out = (gr_complex *) output_items[0];
 
 
-      if (d_remaining > 0) {
-	max_available = std::min((size_t)noutput_items, d_remaining);
-	memcpy(out, d_msg_buf, max_available*sizeof(gr_complex));
-	d_remaining = d_remaining - max_available;
-//	std::cout << "IN FRAME" << std::endl;
-//	std::cout << "Noutput: " << noutput_items << std::endl;
-//	std::cout << "Available: " << max_available << std::endl;
-//	std::cout << "Remaining: " << d_remaining << std::endl;
-	return max_available;
-      }
+//      if (d_remaining > 0) {
+//	max_available = std::min((size_t)noutput_items, d_remaining);
+//	memcpy(out, d_msg_buf, max_available*sizeof(gr_complex));
+//	d_remaining = d_remaining - max_available;
+//	return max_available;
+//      }
 
       /* No way to know a priori the vector length, so just catch exception */
-      while (true) {
-	try {
-//	  std::cout << "Trying to get messages" << std::endl;
+//      while (true) {
+//	try {
 	  msg = delete_head_blocking(pmt::mp ("sigmf"));
 	  tuple = pmt::vector_ref(msg,0);
-//	  std::cout << pmt::tuple_ref (tuple, 0) << std::endl;
-	  d_remaining = pmt::blob_length (pmt::tuple_ref (tuple, 1))
+	  
+	  d_msg_samples = pmt::blob_length (pmt::tuple_ref (tuple, 1))
 	      / sizeof(gr_complex);
-//	  std::cout << "Blob: " << d_remaining << std::endl;
-//	  std::cout << "Noutput: " << noutput_items << std::endl;
-	  max_available = std::min((size_t)noutput_items, d_remaining);
-	  data = (gr_complex *)pmt::blob_data(pmt::tuple_ref(tuple, 1));
-	  memcpy(d_msg_buf, data, pmt::blob_length(pmt::tuple_ref(tuple, 1)));
+	  msg_data = (gr_complex *)pmt::blob_data(pmt::tuple_ref(tuple, 1));
+	  	  memcpy(d_msg_buf, msg_data, pmt::blob_length(pmt::tuple_ref(tuple, 1)));
+	  max_available = std::min((size_t)noutput_items, d_msg_samples);
+//		std::cout << "IN FRAME" << std::endl;
+//		std::cout << "Noutput: " << noutput_items << std::endl;
+//		std::cout << "Available: " << max_available << std::endl;
+//		std::cout << "Message samples: " << d_msg_samples << std::endl;
+	  
+//	  if (1) {
+//	    d_remaining = noutput_items - max_available;
+//	    memcpy(out, d_msg_buf, max_available * sizeof(gr_complex));
+//	  }
+	  
 	  memcpy(out, d_msg_buf, max_available*sizeof(gr_complex));
-	  d_remaining = d_remaining - max_available;
+//	  d_remaining = d_remaining - max_available;
 //	  std::cout << "Available: " << max_available << std::endl;
 //	  std::cout << "Remaining: " << d_remaining << std::endl;
-	  memset(d_msg_buf, 0, d_ifft_size * d_conseq_channel_num * sizeof(gr_complex));
+//	  memset(d_msg_buf, 0, d_ifft_size * d_conseq_channel_num * sizeof(gr_complex));
 	  return max_available;
-	}
-	catch (pmt::out_of_range&) {
-	  /* You are out of range so break */
-	  d_curr_sig = 0;
-	  break;
-	}
-	d_curr_sig++;
-      }
+//	}
+//	catch (pmt::out_of_range&) {
+//	  /* You are out of range so break */
+//	  d_curr_sig = 0;
+//	  return 0;
+//	}
+//	d_curr_sig++;
+//      }
 
       // Tell runtime system how many output items we produced.
-      return noutput_items;
+//      return noutput_items;
     }
 
   } /* namespace phasma */

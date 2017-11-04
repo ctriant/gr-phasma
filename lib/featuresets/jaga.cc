@@ -59,6 +59,7 @@ namespace gr
 	d_stddev = (float*) volk_malloc (sizeof(float), alignment);
 	d_abs = (float*) volk_malloc (d_samples_num * sizeof(float), alignment);
 	d_psd = (float*) volk_malloc (d_samples_num * sizeof(float), alignment);
+	d_power = (gr_complex*) volk_malloc (d_samples_num * sizeof(gr_complex), alignment);
 	d_max = (uint16_t*) volk_malloc (sizeof(uint16_t), alignment);
 	d_samples = (gr_complex*) volk_malloc (
 	    d_samples_num * sizeof(gr_complex), alignment);
@@ -100,8 +101,10 @@ namespace gr
 	  d_outbuf[feature_cnt++] = compute_max_psd_instant_amp (d_samples,
 								 samples_num);
 	}
-	d_outbuf[feature_cnt++] = compute_fft_power_variance (d_samples, 2.0);
-	d_outbuf[feature_cnt++] = compute_fft_power_variance (d_samples, 4.0);
+	memcpy(d_power, in, samples_num * sizeof(gr_complex));
+	d_outbuf[feature_cnt++] = compute_fft_power_variance (in, 1);
+	d_outbuf[feature_cnt++] = compute_fft_power_variance (in, 1);
+	d_outbuf[feature_cnt++] = compute_fft_power_variance (in, 1);
       }
 
       float
@@ -143,13 +146,16 @@ namespace gr
       }
 
       float
-      jaga::compute_fft_power_variance (const gr_complex* in, float power)
+      jaga::compute_fft_power_variance (const gr_complex* in, size_t iter)
       {
 	// TODO: Change hardcoded value
 	size_t samples_num = 1024;
 	size_t idx = std::distance (d_spf,
 				    std::find (d_spf, d_spf + 6, samples_num));
-	volk_32fc_s32f_power_32fc (d_fft->get_inbuf (), in, power, samples_num);
+	for (size_t i=0; i<iter; i++) {
+	  volk_32fc_x2_multiply_32fc (d_power, d_power, d_power, samples_num);
+	}
+	memcpy(d_fft->get_inbuf (), d_power, samples_num * sizeof(gr_complex));
 	d_fft->execute ();
 	memcpy (d_samples, &(d_fft->get_outbuf ())[samples_num / 2],
 		(samples_num / 2) * sizeof(gr_complex));
@@ -158,8 +164,7 @@ namespace gr
 	volk_32fc_magnitude_32f (d_abs, d_samples, samples_num);
 	volk_32f_stddev_and_mean_32f_x2 (d_stddev, d_mean, d_abs, samples_num);
 	volk_32f_index_max_16u (d_max, d_abs, samples_num);
-
-	return std::log10(std::pow (d_stddev[0], 2) / d_abs[d_max[0]]);
+	return std::log10(std::pow (d_stddev[0], 2) / (d_abs[d_max[0]]+1e-20) + 1e-20);
       }
 
       size_t
