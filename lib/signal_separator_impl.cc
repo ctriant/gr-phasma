@@ -221,7 +221,7 @@ namespace gr
                     * log10 (
                         (mag_accum / (d_abs_signal_end - d_abs_signal_start))
                             / d_threshold_linear);
-                if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps) {
+                if (d_abs_signal_end - d_abs_signal_start > d_min_sig_samps && sig_count == 0) {
                   record_signal (in, &d_signals, sig_slot_checkpoint,
                                  sig_slot_curr,
 				 d_abs_signal_start,
