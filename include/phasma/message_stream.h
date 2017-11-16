@@ -19,8 +19,8 @@
  */
 
 
-#ifndef INCLUDED_PHASMA_SIGMF_DEBUG_H
-#define INCLUDED_PHASMA_SIGMF_DEBUG_H
+#ifndef INCLUDED_PHASMA_MESSAGE_STREAM_H
+#define INCLUDED_PHASMA_MESSAGE_STREAM_H
 
 #include <phasma/api.h>
 #include <gnuradio/sync_block.h>
@@ -33,17 +33,17 @@ namespace gr {
      * \ingroup phasma
      *
      */
-    class PHASMA_API sigmf_debug : virtual public gr::sync_block
+    class PHASMA_API message_stream : virtual public gr::sync_block
     {
      public:
-      typedef boost::shared_ptr<sigmf_debug> sptr;
+      typedef boost::shared_ptr<message_stream> sptr;
 
       /*!
-       * \brief Return a shared_ptr to a new instance of phasma::sigmf_debug.
+       * \brief Return a shared_ptr to a new instance of phasma::message_stream.
        *
-       * To avoid accidental use of raw pointers, phasma::sigmf_debug's
+       * To avoid accidental use of raw pointers, phasma::message_stream's
        * constructor is in a private implementation
-       * class. phasma::sigmf_debug::make is the public interface for
+       * class. phasma::message_stream::make is the public interface for
        * creating new instances.
        */
       static sptr make(size_t ifft_size, size_t conseq_channel_num);
@@ -52,5 +52,5 @@ namespace gr {
   } // namespace phasma
 } // namespace gr
 
-#endif /* INCLUDED_PHASMA_SIGMF_DEBUG_H */
+#endif /* INCLUDED_PHASMA_MESSAGE_STREAM_H */
 

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <block>
-  <name>ncurses_console</name>
+  <name>NCurses Terminal UI</name>
   <key>phasma_ncurses_console</key>
   <category>[phasma]</category>
   <import>import phasma</import>

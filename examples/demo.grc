@@ -1258,6 +1258,53 @@
     </param>
   </block>
   <block>
+    <key>phasma_message_stream</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>conseq_channel_num</key>
+      <value>channel_num</value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(151, 523)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>180</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>phasma_message_stream_0</value>
+    </param>
+    <param>
+      <key>ifft_size</key>
+      <value>ifft_size</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
     <key>phasma_ncurses_console</key>
     <param>
       <key>alias</key>
@@ -1369,53 +1416,6 @@
     <param>
       <key>filename</key>
       <value>/home/ctriant/multi_snr.xml</value>
-    </param>
-  </block>
-  <block>
-    <key>phasma_sigmf_debug</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>conseq_channel_num</key>
-      <value>channel_num</value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(137, 521)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>180</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>phasma_sigmf_debug_0</value>
-    </param>
-    <param>
-      <key>ifft_size</key>
-      <value>ifft_size</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
     </param>
   </block>
   <block>
@@ -2190,6 +2190,12 @@
     <sink_key>threshold_rcv</sink_key>
   </connection>
   <connection>
+    <source_block_id>phasma_message_stream_0</source_block_id>
+    <sink_block_id>qtgui_freq_sink_x_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
     <source_block_id>phasma_opencv_predict_0</source_block_id>
     <sink_block_id>blocks_message_debug_0_0</sink_block_id>
     <source_key>classification</source_key>
@@ -2202,22 +2208,16 @@
     <sink_key>in</sink_key>
   </connection>
   <connection>
-    <source_block_id>phasma_sigmf_debug_0</source_block_id>
-    <sink_block_id>qtgui_freq_sink_x_0_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
+    <source_block_id>phasma_signal_separator_0</source_block_id>
+    <sink_block_id>phasma_message_stream_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>sigmf</sink_key>
   </connection>
   <connection>
     <source_block_id>phasma_signal_separator_0</source_block_id>
     <sink_block_id>phasma_opencv_predict_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>phasma_signal_separator_0</source_block_id>
-    <sink_block_id>phasma_sigmf_debug_0</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>sigmf</sink_key>
   </connection>
   <connection>
     <source_block_id>phasma_signal_separator_0</source_block_id>
