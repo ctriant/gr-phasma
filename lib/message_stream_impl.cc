@@ -23,23 +23,23 @@
 #endif
 
 #include <gnuradio/io_signature.h>
-#include "sigmf_debug_impl.h"
+#include "message_stream_impl.h"
 
 namespace gr {
   namespace phasma {
 
-    sigmf_debug::sptr
-    sigmf_debug::make(size_t ifft_size, size_t conseq_channel_num)
+    message_stream::sptr
+    message_stream::make(size_t ifft_size, size_t conseq_channel_num)
     {
       return gnuradio::get_initial_sptr
-        (new sigmf_debug_impl(ifft_size, conseq_channel_num));
+        (new message_stream_impl(ifft_size, conseq_channel_num));
     }
 
     /*
      * The private constructor
      */
-    sigmf_debug_impl::sigmf_debug_impl(size_t ifft_size, size_t conseq_channel_num)
-      : gr::sync_block("sigmf_debug",
+    message_stream_impl::message_stream_impl(size_t ifft_size, size_t conseq_channel_num)
+      : gr::sync_block("message_stream",
               gr::io_signature::make(0, 0, 0),
               gr::io_signature::make(1, 1, sizeof(gr_complex))),
 	      d_ifft_size(ifft_size),
@@ -57,13 +57,13 @@ namespace gr {
     /*
      * Our virtual destructor.
      */
-    sigmf_debug_impl::~sigmf_debug_impl()
+    message_stream_impl::~message_stream_impl()
     {
       delete [] d_msg_buf;
     }
 
     int
-    sigmf_debug_impl::work(int noutput_items,
+    message_stream_impl::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
     {

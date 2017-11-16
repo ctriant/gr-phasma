@@ -21,6 +21,6 @@ install(FILES
     phasma_eigenvalue_signal_detector.xml 
     phasma_opencv_predict.xml
     phasma_signal_separator.xml
-    phasma_sigmf_debug.xml
+    phasma_message_stream.xml
     phasma_ncurses_console.xml DESTINATION share/gnuradio/grc/blocks
 )

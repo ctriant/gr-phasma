@@ -18,15 +18,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_PHASMA_SIGMF_DEBUG_IMPL_H
-#define INCLUDED_PHASMA_SIGMF_DEBUG_IMPL_H
+#ifndef INCLUDED_PHASMA_MESSAGE_STREAM_IMPL_H
+#define INCLUDED_PHASMA_MESSAGE_STREAM_IMPL_H
 
-#include <phasma/sigmf_debug.h>
+#include <phasma/message_stream.h>
 
 namespace gr {
   namespace phasma {
 
-    class sigmf_debug_impl : public sigmf_debug
+    class message_stream_impl : public message_stream
     {
      private:
       size_t d_ifft_size;
@@ -38,8 +38,8 @@ namespace gr {
       gr_complex* d_msg_buf;
 
      public:
-      sigmf_debug_impl(size_t ifft_size, size_t conseq_channel_num);
-      ~sigmf_debug_impl();
+      message_stream_impl(size_t ifft_size, size_t conseq_channel_num);
+      ~message_stream_impl();
 
 
       int work(int noutput_items,
@@ -50,5 +50,5 @@ namespace gr {
   } // namespace phasma
 } // namespace gr
 
-#endif /* INCLUDED_PHASMA_SIGMF_DEBUG_IMPL_H */
+#endif /* INCLUDED_PHASMA_MESSAGE_STREAM_IMPL_H */
 

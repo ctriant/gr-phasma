@@ -30,7 +30,7 @@ install(FILES
     eigenvalue_signal_detector.h 
     opencv_predict.h
     signal_separator.h
-    sigmf_debug.h
+    message_stream.h
     featuresets/dummy_featureset.h
     featuresets/raw_iq_featureset.h 
     featuresets/jaga.h

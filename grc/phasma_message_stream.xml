@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <block>
-  <name>sigmf_debug</name>
-  <key>phasma_sigmf_debug</key>
+  <name>Message to Steam</name>
+  <key>phasma_message_stream</key>
   <category>[phasma]</category>
   <import>import phasma</import>
-  <make>phasma.sigmf_debug($ifft_size, $conseq_channel_num)</make>
+  <make>phasma.message_stream($ifft_size, $conseq_channel_num)</make>
   
   <param>
     <name>IFFT size</name>
