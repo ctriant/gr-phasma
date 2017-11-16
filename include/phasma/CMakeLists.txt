@@ -27,6 +27,7 @@ install(FILES
     log.h
     rforest_model_c.h
     rforest_model_f.h
+    ann_model_c.h
     eigenvalue_signal_detector.h 
     opencv_predict.h
     signal_separator.h

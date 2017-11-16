@@ -33,7 +33,8 @@
 
 typedef enum
 {
-  RANDOM_FOREST,
+  RANDOM_FOREST = 0,
+  ANN
 } opencv_ml_classifier_type_t;
 
 typedef enum

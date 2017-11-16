@@ -9,6 +9,7 @@
 
 %{
 #include "phasma/rforest_model_c.h"
+#include "phasma/ann_model_c.h"
 #include "phasma/rforest_model_f.h"
 #include "phasma/eigenvalue_signal_detector.h"
 #include "phasma/opencv_predict.h"
@@ -22,6 +23,8 @@
 GR_SWIG_BLOCK_MAGIC2(phasma, rforest_model_c);
 %include "phasma/rforest_model_f.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, rforest_model_f);
+%include "phasma/ann_model_c.h"
+GR_SWIG_BLOCK_MAGIC2(phasma, ann_model_c);
 %include "phasma/eigenvalue_signal_detector.h"
 GR_SWIG_BLOCK_MAGIC2(phasma, eigenvalue_signal_detector);
 %include "phasma/opencv_predict.h"

@@ -26,6 +26,10 @@ self.$(id).set_active_mod($active_mod)
 			<name>Random Forest</name>
 			<key>0</key>
 		</option>
+		<option>
+			<name>ANN</name>
+			<key>1</key>
+		</option>
 	</param>
 
 	<param>
