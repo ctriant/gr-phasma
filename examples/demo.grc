@@ -89,11 +89,11 @@
     </param>
     <param>
       <key>value</key>
-      <value>2</value>
+      <value>3</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>True</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -121,7 +121,7 @@
     </param>
     <param>
       <key>label2</key>
-      <value>GFSK</value>
+      <value>PSK8</value>
     </param>
     <param>
       <key>label3</key>
@@ -129,7 +129,7 @@
     </param>
     <param>
       <key>label4</key>
-      <value>8PSK</value>
+      <value>GFSK</value>
     </param>
     <param>
       <key>label</key>
@@ -177,7 +177,7 @@
     </param>
     <param>
       <key>widget</key>
-      <value>radio_buttons</value>
+      <value>combo_box</value>
     </param>
   </block>
   <block>
@@ -1065,7 +1065,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(247, 307)</value>
+      <value>(247, 315)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1320,11 +1320,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(930, 772)</value>
+      <value>(919, 787)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1332,11 +1332,11 @@
     </param>
     <param>
       <key>id</key>
-      <value>phasma_ncurses_console_0</value>
+      <value>phasma_ncurses_console_0_0</value>
     </param>
     <param>
       <key>labels</key>
-      <value>("BPSK", "QPSK", "GFSK", "GMSK", "PSK8")</value>
+      <value>("BPSK", "QPSK", "PSK8", "GMSK","GFSK")</value>
     </param>
   </block>
   <block>
@@ -2203,7 +2203,7 @@
   </connection>
   <connection>
     <source_block_id>phasma_opencv_predict_0</source_block_id>
-    <sink_block_id>phasma_ncurses_console_0</sink_block_id>
+    <sink_block_id>phasma_ncurses_console_0_0</sink_block_id>
     <source_key>print</source_key>
     <sink_key>in</sink_key>
   </connection>
@@ -2221,7 +2221,7 @@
   </connection>
   <connection>
     <source_block_id>phasma_signal_separator_0</source_block_id>
-    <sink_block_id>phasma_ncurses_console_0</sink_block_id>
+    <sink_block_id>phasma_ncurses_console_0_0</sink_block_id>
     <source_key>print</source_key>
     <sink_key>in</sink_key>
   </connection>
